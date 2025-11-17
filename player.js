@@ -1,5 +1,5 @@
 // ============================================
-// DREAMFM SECURE AUDIO PLAYER
+// DREAMFM SECURE AUDIO PLAYER (MOBILE OPTIMIZED)
 // ============================================
 
 console.log("🎧 Secure Player.js loaded");
@@ -12,52 +12,31 @@ const PlayerState = {
     audioElement: null,
     playbackSpeed: 1.0,
     volume: 1.0,
-    blobUrl: null // For cleanup
+    blobUrl: null
 };
 
-// 🔒 SECURITY: Disable Right Click & DevTools
+// 🔒 SECURITY: Disable Right Click
 document.addEventListener('contextmenu', (e) => {
-    if (e.target.tagName === 'AUDIO' || e.target.closest('.audio-player')) {
+    if (e.target.tagName === 'AUDIO' || e.target.closest('.full-player')) {
         e.preventDefault();
         showToast('⚠️ Download not allowed');
     }
 });
 
-// 🔒 Disable common download shortcuts
+// 🔒 Disable download shortcuts
 document.addEventListener('keydown', (e) => {
-    // Ctrl+S, Ctrl+Shift+I, F12, Ctrl+U
     if ((e.ctrlKey && e.key === 's') || 
         (e.ctrlKey && e.shiftKey && e.key === 'I') ||
         e.key === 'F12' ||
         (e.ctrlKey && e.key === 'u')) {
-        if (document.querySelector('.full-player').style.display === 'block') {
+        if (document.getElementById('fullPlayer').style.display !== 'none') {
             e.preventDefault();
             showToast('⚠️ Action not allowed');
         }
     }
 });
 
-// 🔒 DevTools Detection
-let devtoolsOpen = false;
-const detectDevTools = () => {
-    const threshold = 160;
-    if (window.outerWidth - window.innerWidth > threshold || 
-        window.outerHeight - window.innerHeight > threshold) {
-        if (!devtoolsOpen && PlayerState.isPlaying) {
-            devtoolsOpen = true;
-            console.log('DevTools detected - pausing for security');
-            PlayerState.audioElement.pause();
-            PlayerState.isPlaying = false;
-            updatePlayButton();
-            showToast('⚠️ Please close DevTools to continue');
-        }
-    } else {
-        devtoolsOpen = false;
-    }
-};
-setInterval(detectDevTools, 1000);
-
-// Initialize Audio Element
+// Initialize Player
 function initializePlayer() {
     PlayerState.audioElement = document.getElementById('audioElement');
     
@@ -66,7 +45,6 @@ function initializePlayer() {
         return;
     }
     
-    // 🔒 Hide controls (custom player only)
     PlayerState.audioElement.controls = false;
     PlayerState.audioElement.controlsList = 'nodownload noplaybackrate';
     
@@ -75,11 +53,6 @@ function initializePlayer() {
     PlayerState.audioElement.addEventListener('timeupdate', onTimeUpdate);
     PlayerState.audioElement.addEventListener('ended', onAudioEnded);
     PlayerState.audioElement.addEventListener('error', onAudioError);
-    
-    // Prevent download attempt
-    PlayerState.audioElement.addEventListener('loadstart', () => {
-        console.log('🔒 Secure streaming active');
-    });
     
     // Control Buttons
     document.getElementById('miniPlayBtn')?.addEventListener('click', (e) => {
@@ -91,11 +64,28 @@ function initializePlayer() {
     document.getElementById('prevChapterBtn')?.addEventListener('click', previousChapter);
     document.getElementById('nextChapterBtn')?.addEventListener('click', nextChapter);
     document.getElementById('closePlayer')?.addEventListener('click', closeFullPlayer);
-    document.getElementById('miniPlayer')?.addEventListener('click', openFullPlayer);
+    document.getElementById('miniPlayerClick')?.addEventListener('click', openFullPlayer);
     document.getElementById('seekBar')?.addEventListener('input', onSeek);
     document.getElementById('volumeSlider')?.addEventListener('input', onVolumeChange);
     document.getElementById('speedBtn')?.addEventListener('click', cycleSpeed);
     document.getElementById('chaptersBtn')?.addEventListener('click', toggleChaptersList);
+    document.getElementById('volumeBtn')?.addEventListener('click', toggleVolumePanel);
+    
+    // Forward/Rewind buttons
+    document.getElementById('forward10')?.addEventListener('click', () => {
+        if (PlayerState.audioElement) {
+            PlayerState.audioElement.currentTime += 10;
+        }
+    });
+    
+    document.getElementById('rewind10')?.addEventListener('click', () => {
+        if (PlayerState.audioElement) {
+            PlayerState.audioElement.currentTime -= 10;
+        }
+    });
+    
+    // Swipe down to close (mobile)
+    setupSwipeToClose();
     
     console.log("✅ Secure Player initialized");
 }
@@ -117,7 +107,10 @@ function playAudiobook(bookId, bookData) {
     openFullPlayer();
 }
 
-// 🔒 Load Chapter with Blob URL (Anti-Download)
+// Make it global
+window.playAudiobook = playAudiobook;
+
+// Load Chapter with Blob URL
 async function loadChapter(chapterNum) {
     const book = PlayerState.currentBook;
     
@@ -128,34 +121,31 @@ async function loadChapter(chapterNum) {
     
     PlayerState.currentChapter = chapterNum;
     
-    // Clean up old blob URL
+    // Clean up old blob
     if (PlayerState.blobUrl) {
         URL.revokeObjectURL(PlayerState.blobUrl);
     }
     
-    // Generate secure URL
     const audioUrl = generateAudioURL(book.audioSlug, chapterNum);
-    console.log("🔒 Loading secure audio...");
+    console.log("🔒 Loading secure audio:", audioUrl);
     
     try {
-        // Fetch as blob to hide source
+        showToast(`📖 Loading Chapter ${chapterNum}...`);
+        
         const response = await fetch(audioUrl);
         
         if (!response.ok) {
-            throw new Error('Audio file not found');
+            throw new Error('Chapter not available');
         }
         
         const blob = await response.blob();
-        
-        // Create blob URL (temporary, not downloadable easily)
         PlayerState.blobUrl = URL.createObjectURL(blob);
         
-        // Load blob URL instead of direct URL
         PlayerState.audioElement.src = PlayerState.blobUrl;
         PlayerState.audioElement.load();
         
         updatePlayerUI();
-        showToast(`📖 Chapter ${chapterNum} loaded`);
+        showToast(`✅ Chapter ${chapterNum} loaded`);
         
     } catch (error) {
         console.error('❌ Load error:', error);
@@ -185,7 +175,7 @@ function updatePlayerUI() {
     document.getElementById('playerCoverImg').src = book.coverUrl;
     document.getElementById('playerBookTitle').textContent = book.title;
     document.getElementById('playerAuthor').textContent = book.author;
-    document.getElementById('playerChapterTitle').textContent = `Chapter ${chapterNum}`;
+    document.getElementById('playerChapterTitle').textContent = `Chapter ${chapterNum} of ${book.totalChapters}`;
     
     updatePlayButton();
     loadChaptersList();
@@ -218,33 +208,36 @@ function togglePlayPause() {
 
 // Update Play Button
 function updatePlayButton() {
+    const icon = PlayerState.isPlaying ? '⏸️' : '▶️';
+    
     const miniBtn = document.getElementById('miniPlayBtn');
     const fullBtn = document.getElementById('playPauseBtn');
-    
-    const icon = PlayerState.isPlaying ? '⏸️' : '▶️';
     
     if (miniBtn) miniBtn.textContent = icon;
     if (fullBtn) fullBtn.textContent = icon;
 }
 
-// Previous Chapter
+// Previous/Next Chapter
 function previousChapter() {
     if (PlayerState.currentChapter > 1) {
         loadChapter(PlayerState.currentChapter - 1);
         if (PlayerState.isPlaying) {
-            setTimeout(() => PlayerState.audioElement.play(), 100);
+            setTimeout(() => PlayerState.audioElement.play(), 200);
         }
+    } else {
+        showToast("⚠️ First chapter");
     }
 }
 
-// Next Chapter
 function nextChapter() {
     const book = PlayerState.currentBook;
     if (book && PlayerState.currentChapter < book.totalChapters) {
         loadChapter(PlayerState.currentChapter + 1);
         if (PlayerState.isPlaying) {
-            setTimeout(() => PlayerState.audioElement.play(), 100);
+            setTimeout(() => PlayerState.audioElement.play(), 200);
         }
+    } else {
+        showToast("⚠️ Last chapter");
     }
 }
 
@@ -294,36 +287,41 @@ function onSeek(e) {
     }
 }
 
-// Volume Change
+// Volume
 function onVolumeChange(e) {
     const volume = e.target.value / 100;
     PlayerState.audioElement.volume = volume;
     PlayerState.volume = volume;
 }
 
-// Cycle Speed
+function toggleVolumePanel() {
+    const panel = document.getElementById('volumeControl');
+    if (panel) {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Speed
 function cycleSpeed() {
-    const speeds = [1.0, 1.25, 1.5, 1.75, 2.0];
+    const speeds = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
     const currentIndex = speeds.indexOf(PlayerState.playbackSpeed);
     const nextIndex = (currentIndex + 1) % speeds.length;
     
     PlayerState.playbackSpeed = speeds[nextIndex];
     PlayerState.audioElement.playbackRate = PlayerState.playbackSpeed;
     
-    document.getElementById('speedBtn').textContent = PlayerState.playbackSpeed + 'x';
+    document.getElementById('speedText').textContent = PlayerState.playbackSpeed + 'x';
+    showToast(`⚡ Speed: ${PlayerState.playbackSpeed}x`);
 }
 
-// Toggle Chapters List
+// Chapters List
 function toggleChaptersList() {
-    const chaptersList = document.getElementById('chaptersList');
-    if (chaptersList.style.display === 'none') {
-        chaptersList.style.display = 'block';
-    } else {
-        chaptersList.style.display = 'none';
+    const list = document.getElementById('chaptersList');
+    if (list) {
+        list.style.display = list.style.display === 'none' ? 'block' : 'none';
     }
 }
 
-// Load Chapters List
 function loadChaptersList() {
     const book = PlayerState.currentBook;
     if (!book) return;
@@ -338,14 +336,12 @@ function loadChaptersList() {
             chapterDiv.classList.add('active');
         }
         
-        chapterDiv.innerHTML = `
-            <div>📖 Chapter ${i}</div>
-        `;
+        chapterDiv.innerHTML = `<div>📖 Chapter ${i}</div>`;
         
         chapterDiv.addEventListener('click', () => {
             loadChapter(i);
             if (PlayerState.isPlaying) {
-                setTimeout(() => PlayerState.audioElement.play(), 100);
+                setTimeout(() => PlayerState.audioElement.play(), 200);
             }
         });
         
@@ -353,52 +349,75 @@ function loadChaptersList() {
     }
 }
 
-// Open/Close Full Player
+// Open/Close Player
 function openFullPlayer() {
-    document.getElementById('fullPlayer').style.display = 'block';
+    const fullPlayer = document.getElementById('fullPlayer');
+    fullPlayer.style.display = 'block';
     document.body.style.overflow = 'hidden';
+    setTimeout(() => fullPlayer.classList.add('active'), 10);
 }
 
 function closeFullPlayer() {
-    document.getElementById('fullPlayer').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    const fullPlayer = document.getElementById('fullPlayer');
+    fullPlayer.classList.remove('active');
+    setTimeout(() => {
+        fullPlayer.style.display = 'none';
+        document.body.style.overflow = '';
+    }, 300);
+}
+
+// Swipe to Close (Mobile)
+function setupSwipeToClose() {
+    const fullPlayer = document.getElementById('fullPlayer');
+    let startY = 0;
+    let currentY = 0;
+    
+    fullPlayer?.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    }, { passive: true });
+    
+    fullPlayer?.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        
+        if (diff > 0 && diff < 300) {
+            fullPlayer.style.transform = `translateY(${diff}px)`;
+        }
+    }, { passive: true });
+    
+    fullPlayer?.addEventListener('touchend', () => {
+        const diff = currentY - startY;
+        
+        if (diff > 150) {
+            closeFullPlayer();
+        } else {
+            fullPlayer.style.transform = 'translateY(0)';
+        }
+    });
 }
 
 // Format Time
 function formatTime(seconds) {
     if (isNaN(seconds)) return '0:00';
     
-    const mins = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
+    
+    if (hours > 0) {
+        return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Toast Notification
-function showToast(message) {
-    // Remove existing toast
-    const existingToast = document.querySelector('.toast-notification');
-    if (existingToast) {
-        existingToast.remove();
-    }
-    
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => toast.classList.add('show'), 100);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// Cleanup on page unload
+// Cleanup
 window.addEventListener('beforeunload', () => {
     if (PlayerState.blobUrl) {
         URL.revokeObjectURL(PlayerState.blobUrl);
     }
 });
 
-// Initialize on load
+// Initialize
 document.addEventListener('DOMContentLoaded', initializePlayer);
+
+console.log("✅ Player ready!");
