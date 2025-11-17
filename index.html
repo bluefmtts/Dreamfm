@@ -5,8 +5,637 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamFM - Premium Audiobooks</title>
     
-    <!-- CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <!-- ✅ CSS INLINE (No external file needed!) -->
+    <style>
+        :root {
+            --primary-bg: #0a0e27;
+            --secondary-bg: #141b3a;
+            --card-bg: #1a2140;
+            --accent-blue: #4f8ff7;
+            --accent-blue-dark: #3d7ce0;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a8c1;
+            --text-muted: #6b7594;
+            --border-color: rgba(79, 143, 247, 0.1);
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 25px rgba(79, 143, 247, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--secondary-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.8rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+            margin-right: 10px;
+            filter: drop-shadow(0 0 10px var(--accent-blue));
+        }
+
+        .logo-text {
+            background: linear-gradient(135deg, var(--accent-blue), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-blue);
+            background: rgba(79, 143, 247, 0.15);
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 143, 247, 0.3);
+        }
+
+        .btn-small {
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            background: rgba(79, 143, 247, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-blue);
+        }
+
+        /* Main Content */
+        #mainContent {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px 30px;
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #ffffff, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+        }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* Book Grid */
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .book-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-blue);
+        }
+
+        .book-cover {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            overflow: hidden;
+            background: var(--secondary-bg);
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .book-card:hover .book-cover img {
+            transform: scale(1.08);
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 60px;
+            height: 60px;
+            background: rgba(79, 143, 247, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .book-card:hover .play-overlay {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .book-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(79, 143, 247, 0.9);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .book-info {
+            padding: 15px;
+        }
+
+        .book-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+        }
+
+        .book-author {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .book-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .book-rating {
+            font-size: 0.8rem;
+            color: #ffd700;
+        }
+
+        .rating-text {
+            color: var(--text-secondary);
+            margin-left: 4px;
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .category-card {
+            background: var(--card-bg);
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .category-card:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Loading */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(79, 143, 247, 0.2);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-books {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+
+        /* Mini Player */
+        .mini-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--secondary-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+        }
+
+        .mini-player-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 12px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            cursor: pointer;
+        }
+
+        .mini-cover {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .mini-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .mini-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mini-chapter {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .mini-btn {
+            background: var(--accent-blue);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mini-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(79, 143, 247, 0.2);
+        }
+
+        .mini-progress-bar {
+            height: 100%;
+            background: var(--accent-blue);
+            transition: width 0.1s linear;
+        }
+
+        /* Full Player */
+        .full-player {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            z-index: 2000;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .full-player-content {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .close-player-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        .player-cover-container {
+            margin: 40px auto 30px;
+            width: 300px;
+            height: 300px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .player-book-info h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .player-book-info p {
+            color: var(--text-secondary);
+            margin: 5px 0;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        .seek-bar {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: rgba(79, 143, 247, 0.2);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .seek-bar::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .player-main-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .control-btn {
+            background: rgba(79, 143, 247, 0.15);
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-pause-btn {
+            width: 80px;
+            height: 80px;
+            background: var(--accent-blue);
+            font-size: 2rem;
+        }
+
+        .player-additional-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .small-btn {
+            background: rgba(79, 143, 247, 0.15);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .volume-slider {
+            width: 120px;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(79, 143, 247, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .chapters-list {
+            background: rgba(79, 143, 247, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .chapter-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .chapter-item:hover {
+            background: rgba(79, 143, 247, 0.2);
+        }
+
+        .chapter-item.active {
+            background: var(--accent-blue);
+        }
+
+        /* Toast */
+        .toast-notification {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s ease;
+            border: 1px solid var(--accent-blue);
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Mobile */
+        @media (max-width: 1200px) {
+            .book-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .book-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .book-cover {
+                height: 240px;
+            }
+            
+            .nav-menu {
+                gap: 10px;
+            }
+            
+            .player-cover-container {
+                width: 260px;
+                height: 260px;
+            }
+        }
+
+        #audioElement {
+            display: none;
+        }
+    </style>
     
     <!-- Firebase SDK (Modular) -->
     <script type="module">
@@ -15,93 +644,68 @@
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAxXvJt6m-IK2G_EstbvYQZBj5wMBaqFeM",
             authDomain: "dreamfm-a6694.firebaseapp.com",
             projectId: "dreamfm-a6694",
             storageBucket: "dreamfm-a6694.firebasestorage.app",
             messagingSenderId: "634304814330",
-            appId: "1:634304814330:web:e4fd0cd5e36276c37d3d43",
-            measurementId: "G-EDGXSEEMHL"
+            appId: "1:634304814330:web:e4fd0cd5e36276c37d3d43"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         window.auth = getAuth(app);
         window.db = getFirestore(app);
         window.storage = getStorage(app);
-
-        // Global user variable
         window.currentUser = null;
 
-        // Auth State Check
         onAuthStateChanged(window.auth, (user) => {
             if (!user) {
-                // Not logged in - redirect to login
-                console.log('❌ Not authenticated, redirecting to login');
+                console.log('❌ Not authenticated');
                 window.location.href = 'login.html';
             } else {
-                // Logged in
                 console.log('✅ Authenticated:', user.email);
                 window.currentUser = user;
                 
-                // Update UI with user info
-                updateUserUI(user);
+                const loginBtn = document.getElementById('loginBtn');
+                const userInfo = document.getElementById('userInfo');
+                const userName = document.getElementById('userName');
+                const userPhoto = document.getElementById('userPhoto');
                 
-                // Hide loading, show app
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (userInfo) {
+                    userInfo.style.display = 'flex';
+                    if (userName) userName.textContent = user.displayName || user.email.split('@')[0];
+                    if (userPhoto) userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=4f8ff7&color=fff`;
+                }
+                
                 document.getElementById('authLoading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
             }
         });
 
-        // Update User UI
-        function updateUserUI(user) {
-            const loginBtn = document.getElementById('loginBtn');
-            const userInfo = document.getElementById('userInfo');
-            const userName = document.getElementById('userName');
-            const userPhoto = document.getElementById('userPhoto');
-            
-            if (loginBtn) loginBtn.style.display = 'none';
-            
-            if (userInfo) {
-                userInfo.style.display = 'flex';
-                if (userName) userName.textContent = user.displayName || user.email.split('@')[0];
-                if (userPhoto) userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=4f8ff7&color=fff`;
-            }
-        }
-
-        // Logout function
         window.logout = async function() {
             try {
                 await signOut(window.auth);
                 localStorage.clear();
                 window.location.href = 'login.html';
             } catch (error) {
-                console.error('❌ Logout error:', error);
+                console.error('Logout error:', error);
             }
         }
-
-        console.log('🎧 DreamFM Firebase Initialized');
     </script>
 </head>
 <body>
-    <!-- Auth Loading Screen -->
-    <div id="authLoading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0e27 0%, #1a2140 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <!-- Auth Loading -->
+    <div id="authLoading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0e27, #1a2140); display: flex; align-items: center; justify-content: center; z-index: 9999;">
         <div style="text-align: center; color: white;">
             <div style="width: 50px; height: 50px; border: 4px solid rgba(79, 143, 247, 0.2); border-top-color: #4f8ff7; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-            <p style="font-size: 1.1rem;">Loading DreamFM...</p>
+            <p>Loading DreamFM...</p>
         </div>
     </div>
-    <style>
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
 
-    <!-- Main App (Hidden until authenticated) -->
+    <!-- Main App -->
     <div id="app" style="display: none;">
-        <!-- Navigation Bar -->
         <nav class="navbar">
             <div class="nav-container">
                 <div class="logo">
@@ -124,7 +728,6 @@
             </div>
         </nav>
 
-        <!-- Main Content Area -->
         <main id="mainContent">
             <div class="loading-container">
                 <div class="loading-spinner"></div>
@@ -132,7 +735,6 @@
             </div>
         </main>
 
-        <!-- Mini Player (Bottom Fixed Bar) -->
         <div id="miniPlayer" class="mini-player" style="display:none;">
             <div class="mini-player-content">
                 <img id="miniCover" class="mini-cover" src="" alt="">
@@ -149,25 +751,17 @@
             </div>
         </div>
 
-        <!-- Full Screen Player Modal -->
         <div id="fullPlayer" class="full-player" style="display:none;">
             <div class="full-player-content">
-                <!-- Close Button -->
                 <button id="closePlayer" class="close-player-btn">✕</button>
-                
-                <!-- Book Cover -->
                 <div class="player-cover-container">
                     <img id="playerCoverImg" class="player-cover-img" src="" alt="">
                 </div>
-                
-                <!-- Book Info -->
                 <div class="player-book-info">
                     <h2 id="playerBookTitle">Book Title</h2>
                     <p id="playerAuthor">Author Name</p>
-                    <p id="playerChapterTitle">Chapter 1: Introduction</p>
+                    <p id="playerChapterTitle">Chapter 1</p>
                 </div>
-                
-                <!-- Progress Bar -->
                 <div class="player-progress-section">
                     <div class="time-display">
                         <span id="currentTimeDisplay">0:00</span>
@@ -175,67 +769,48 @@
                     </div>
                     <input type="range" id="seekBar" class="seek-bar" value="0" min="0" max="100">
                 </div>
-                
-                <!-- Main Controls -->
                 <div class="player-main-controls">
                     <button id="prevChapterBtn" class="control-btn">⏮️</button>
                     <button id="playPauseBtn" class="control-btn play-pause-btn">▶️</button>
                     <button id="nextChapterBtn" class="control-btn">⏭️</button>
                 </div>
-                
-                <!-- Additional Controls -->
                 <div class="player-additional-controls">
                     <button id="speedBtn" class="small-btn">1.0x</button>
                     <input type="range" id="volumeSlider" class="volume-slider" value="100" min="0" max="100">
                     <button id="chaptersBtn" class="small-btn">📑 Chapters</button>
                 </div>
-                
-                <!-- Chapter List (Hidden by default) -->
                 <div id="chaptersList" class="chapters-list" style="display:none;">
                     <h3>Chapters</h3>
-                    <div id="chaptersContent" class="chapters-content">
-                        <!-- Chapters will be loaded here dynamically -->
-                    </div>
+                    <div id="chaptersContent" class="chapters-content"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Hidden Audio Element -->
         <audio id="audioElement" preload="metadata"></audio>
     </div>
 
-    <!-- Firebase Compat Scripts (for old code compatibility) -->
+    <!-- Firebase Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
     
-    <!-- Initialize Compat Mode -->
     <script>
-        // Initialize Firebase Compat (for existing code)
-        const firebaseConfig = {
-            apiKey: "AIzaSyAxXvJt6m-IK2G_EstbvYQZBj5wMBaqFeM",
-            authDomain: "dreamfm-a6694.firebaseapp.com",
-            projectId: "dreamfm-a6694",
-            storageBucket: "dreamfm-a6694.firebasestorage.app",
-            messagingSenderId: "634304814330",
-            appId: "1:634304814330:web:e4fd0cd5e36276c37d3d43"
-        };
-
-        // Only initialize if not already initialized
         if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp({
+                apiKey: "AIzaSyAxXvJt6m-IK2G_EstbvYQZBj5wMBaqFeM",
+                authDomain: "dreamfm-a6694.firebaseapp.com",
+                projectId: "dreamfm-a6694",
+                storageBucket: "dreamfm-a6694.firebasestorage.app",
+                messagingSenderId: "634304814330",
+                appId: "1:634304814330:web:e4fd0cd5e36276c37d3d43"
+            });
         }
-
-        // Compat references
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        console.log("✅ Firebase Compat Initialized");
     </script>
 
-    <!-- App Scripts -->
+    <!-- ✅ JS FILES KO BHI INLINE KAR SAKTE HO -->
+    <!-- Ya seperate files use karo (js folder me) -->
     <script src="js/player.js"></script>
     <script src="js/app.js"></script>
 </body>
