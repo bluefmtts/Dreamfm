@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamFM - Premium Audiobooks</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Firebase SDK (CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <span class="logo-icon">🎧</span>
+                    <span class="logo-text">DreamFM</span>
+                </div>
+                <div class="nav-menu">
+                    <a href="#home" class="nav-link active">Home</a>
+                    <a href="#library" class="nav-link">Library</a>
+                    <a href="#profile" class="nav-link">Profile</a>
+                </div>
+                <div class="auth-buttons">
+                    <button id="loginBtn" class="btn btn-primary">Login</button>
+                    <div id="userInfo" class="user-info" style="display:none;">
+                        <img id="userPhoto" class="user-avatar">
+                        <span id="userName"></span>
+                        <button id="logoutBtn" class="btn btn-small">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="mainContent">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>Loading DreamFM...</p>
+            </div>
+        </main>
+
+        <!-- Mini Player (Bottom Fixed Bar) -->
+        <div id="miniPlayer" class="mini-player" style="display:none;">
+            <div class="mini-player-content">
+                <img id="miniCover" class="mini-cover" src="" alt="">
+                <div class="mini-info">
+                    <div id="miniTitle" class="mini-title">Book Title</div>
+                    <div id="miniChapter" class="mini-chapter">Chapter 1</div>
+                </div>
+                <div class="mini-controls">
+                    <button id="miniPlayBtn" class="mini-btn">▶️</button>
+                </div>
+                <div class="mini-progress-container">
+                    <div id="miniProgressBar" class="mini-progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Screen Player Modal -->
+        <div id="fullPlayer" class="full-player" style="display:none;">
+            <div class="full-player-content">
+                <!-- Close Button -->
+                <button id="closePlayer" class="close-player-btn">✕</button>
+                
+                <!-- Book Cover -->
+                <div class="player-cover-container">
+                    <img id="playerCoverImg" class="player-cover-img" src="" alt="">
+                </div>
+                
+                <!-- Book Info -->
+                <div class="player-book-info">
+                    <h2 id="playerBookTitle">Book Title</h2>
+                    <p id="playerAuthor">Author Name</p>
+                    <p id="playerChapterTitle">Chapter 1: Introduction</p>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="player-progress-section">
+                    <div class="time-display">
+                        <span id="currentTimeDisplay">0:00</span>
+                        <span id="durationDisplay">0:00</span>
+                    </div>
+                    <input type="range" id="seekBar" class="seek-bar" value="0" min="0" max="100">
+                </div>
+                
+                <!-- Main Controls -->
+                <div class="player-main-controls">
+                    <button id="prevChapterBtn" class="control-btn">⏮️</button>
+                    <button id="playPauseBtn" class="control-btn play-pause-btn">▶️</button>
+                    <button id="nextChapterBtn" class="control-btn">⏭️</button>
+                </div>
+                
+                <!-- Additional Controls -->
+                <div class="player-additional-controls">
+                    <button id="speedBtn" class="small-btn">1.0x</button>
+                    <input type="range" id="volumeSlider" class="volume-slider" value="100" min="0" max="100">
+                    <button id="chaptersBtn" class="small-btn">📑 Chapters</button>
+                </div>
+                
+                <!-- Chapter List (Hidden by default) -->
+                <div id="chaptersList" class="chapters-list" style="display:none;">
+                    <h3>Chapters</h3>
+                    <div id="chaptersContent" class="chapters-content">
+                        <!-- Chapters will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden Audio Element -->
+        <audio id="audioElement" preload="metadata"></audio>
+    </div>
+
+    <!-- JavaScript Files (Load in correct order) -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
