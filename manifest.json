@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "scope": "/",
   "categories": ["entertainment", "books", "education"],
-  "icons": [
+  "icons": []
     {
       "src": "/icons/icon-72x72.png",
       "sizes": "72x72",
