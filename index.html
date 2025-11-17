@@ -2,10 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#4f8ff7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DreamFM">
     <title>DreamFM - Premium Audiobooks</title>
     
-    <!-- ✅ FIXED PATH - Root level -->
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    
     <link rel="stylesheet" href="style.css">
     
     <!-- Firebase SDK (Modular) -->
@@ -36,15 +43,11 @@
                 console.log('✅ Authenticated:', user.email);
                 window.currentUser = user;
                 
-                const userInfo = document.getElementById('userInfo');
                 const userName = document.getElementById('userName');
                 const userPhoto = document.getElementById('userPhoto');
                 
-                if (userInfo) {
-                    userInfo.style.display = 'flex';
-                    if (userName) userName.textContent = user.displayName || user.email.split('@')[0];
-                    if (userPhoto) userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=4f8ff7&color=fff`;
-                }
+                if (userName) userName.textContent = user.displayName || user.email.split('@')[0];
+                if (userPhoto) userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=4f8ff7&color=fff`;
                 
                 document.getElementById('authLoading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
@@ -64,39 +67,92 @@
 </head>
 <body>
     <!-- Auth Loading -->
-    <div id="authLoading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0e27, #1a2140); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="text-align: center; color: white;">
-            <div style="width: 50px; height: 50px; border: 4px solid rgba(79, 143, 247, 0.2); border-top-color: #4f8ff7; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+    <div id="authLoading" class="auth-loading">
+        <div class="auth-loading-content">
+            <div class="loading-spinner"></div>
             <p>Loading DreamFM...</p>
         </div>
     </div>
-    <style>
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
 
     <!-- Main App -->
     <div id="app" style="display: none;">
+        <!-- Mobile Header -->
         <nav class="navbar">
             <div class="nav-container">
+                <!-- Hamburger Menu -->
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
                 <div class="logo">
                     <span class="logo-icon">🎧</span>
                     <span class="logo-text">DreamFM</span>
                 </div>
-                <div class="nav-menu">
-                    <a href="#home" class="nav-link active">Home</a>
-                    <a href="#library" class="nav-link">Library</a>
-                    <a href="#profile" class="nav-link">Profile</a>
+                
+                <!-- Desktop Nav -->
+                <div class="nav-menu" id="navMenu">
+                    <a href="#home" class="nav-link active" data-page="home">🏠 Home</a>
+                    <a href="#library" class="nav-link" data-page="library">📚 Library</a>
+                    <a href="#profile" class="nav-link" data-page="profile">👤 Profile</a>
                 </div>
+                
+                <!-- User Profile -->
                 <div class="auth-buttons">
-                    <div id="userInfo" class="user-info" style="display:none;">
-                        <img id="userPhoto" class="user-avatar">
-                        <span id="userName"></span>
-                        <button class="btn btn-small" onclick="logout()">Logout</button>
+                    <div class="user-info">
+                        <img id="userPhoto" class="user-avatar" alt="User">
+                        <span id="userName" class="user-name-desktop"></span>
                     </div>
                 </div>
             </div>
         </nav>
 
+        <!-- Mobile Side Drawer -->
+        <div class="mobile-drawer" id="mobileDrawer">
+            <div class="drawer-header">
+                <div class="drawer-user-info">
+                    <img id="drawerUserPhoto" class="drawer-avatar" alt="User">
+                    <div class="drawer-user-text">
+                        <h3 id="drawerUserName">User Name</h3>
+                        <p id="drawerUserEmail">user@email.com</p>
+                    </div>
+                </div>
+                <button class="drawer-close-btn" id="drawerCloseBtn">✕</button>
+            </div>
+            
+            <nav class="drawer-nav">
+                <a href="#home" class="drawer-link active" data-page="home">
+                    <span>🏠</span> Home
+                </a>
+                <a href="#library" class="drawer-link" data-page="library">
+                    <span>📚</span> My Library
+                </a>
+                <a href="#favorites" class="drawer-link">
+                    <span>❤️</span> Favorites
+                </a>
+                <a href="#downloads" class="drawer-link">
+                    <span>⬇️</span> Downloads
+                </a>
+                <a href="#profile" class="drawer-link" data-page="profile">
+                    <span>👤</span> Profile
+                </a>
+                <a href="#settings" class="drawer-link">
+                    <span>⚙️</span> Settings
+                </a>
+            </nav>
+            
+            <div class="drawer-footer">
+                <button class="btn-logout" onclick="logout()">
+                    🚪 Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Drawer Overlay -->
+        <div class="drawer-overlay" id="drawerOverlay"></div>
+
+        <!-- Main Content -->
         <main id="mainContent">
             <div class="loading-container">
                 <div class="loading-spinner"></div>
@@ -104,33 +160,41 @@
             </div>
         </main>
 
+        <!-- Mini Player (Fixed Bottom) -->
         <div id="miniPlayer" class="mini-player" style="display:none;">
-            <div class="mini-player-content">
-                <img id="miniCover" class="mini-cover" src="">
+            <div class="mini-player-content" id="miniPlayerContent">
+                <img id="miniCover" class="mini-cover" src="" alt="">
                 <div class="mini-info">
                     <div id="miniTitle" class="mini-title">Book Title</div>
                     <div id="miniChapter" class="mini-chapter">Chapter 1</div>
                 </div>
                 <div class="mini-controls">
-                    <button id="miniPlayBtn" class="mini-btn">▶️</button>
+                    <button id="miniPlayBtn" class="mini-btn" aria-label="Play">▶️</button>
                 </div>
-                <div class="mini-progress-container">
-                    <div id="miniProgressBar" class="mini-progress-bar" style="width: 0%"></div>
-                </div>
+            </div>
+            <div class="mini-progress-container">
+                <div id="miniProgressBar" class="mini-progress-bar"></div>
             </div>
         </div>
 
+        <!-- Full Player Modal -->
         <div id="fullPlayer" class="full-player" style="display:none;">
             <div class="full-player-content">
-                <button id="closePlayer" class="close-player-btn">✕</button>
+                <!-- Swipe Down Indicator -->
+                <div class="swipe-indicator"></div>
+                
+                <button id="closePlayer" class="close-player-btn" aria-label="Close">✕</button>
+                
                 <div class="player-cover-container">
-                    <img id="playerCoverImg" class="player-cover-img" src="">
+                    <img id="playerCoverImg" class="player-cover-img" src="" alt="">
                 </div>
+                
                 <div class="player-book-info">
                     <h2 id="playerBookTitle">Book Title</h2>
                     <p id="playerAuthor">Author Name</p>
                     <p id="playerChapterTitle">Chapter 1</p>
                 </div>
+                
                 <div class="player-progress-section">
                     <div class="time-display">
                         <span id="currentTimeDisplay">0:00</span>
@@ -138,22 +202,50 @@
                     </div>
                     <input type="range" id="seekBar" class="seek-bar" value="0" min="0" max="100">
                 </div>
+                
                 <div class="player-main-controls">
-                    <button id="prevChapterBtn" class="control-btn">⏮️</button>
-                    <button id="playPauseBtn" class="control-btn play-pause-btn">▶️</button>
-                    <button id="nextChapterBtn" class="control-btn">⏭️</button>
+                    <button id="prevChapterBtn" class="control-btn" aria-label="Previous">⏮️</button>
+                    <button id="rewind10Btn" class="control-btn control-btn-small" aria-label="Rewind 10s">-10</button>
+                    <button id="playPauseBtn" class="control-btn play-pause-btn" aria-label="Play/Pause">▶️</button>
+                    <button id="forward10Btn" class="control-btn control-btn-small" aria-label="Forward 10s">+10</button>
+                    <button id="nextChapterBtn" class="control-btn" aria-label="Next">⏭️</button>
                 </div>
+                
                 <div class="player-additional-controls">
                     <button id="speedBtn" class="small-btn">1.0x</button>
-                    <input type="range" id="volumeSlider" class="volume-slider" value="100" min="0" max="100">
-                    <button id="chaptersBtn" class="small-btn">📑 Chapters</button>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" id="volumeSlider" class="volume-slider" value="100" min="0" max="100">
+                    </div>
+                    <button id="chaptersBtn" class="small-btn">📑</button>
                 </div>
+                
                 <div id="chaptersList" class="chapters-list" style="display:none;">
                     <h3>Chapters</h3>
                     <div id="chaptersContent"></div>
                 </div>
             </div>
         </div>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <nav class="bottom-nav" id="bottomNav">
+            <a href="#home" class="bottom-nav-item active" data-page="home">
+                <span class="bottom-nav-icon">🏠</span>
+                <span class="bottom-nav-label">Home</span>
+            </a>
+            <a href="#library" class="bottom-nav-item" data-page="library">
+                <span class="bottom-nav-icon">📚</span>
+                <span class="bottom-nav-label">Library</span>
+            </a>
+            <a href="#search" class="bottom-nav-item" data-page="search">
+                <span class="bottom-nav-icon">🔍</span>
+                <span class="bottom-nav-label">Search</span>
+            </a>
+            <a href="#profile" class="bottom-nav-item" data-page="profile">
+                <span class="bottom-nav-icon">👤</span>
+                <span class="bottom-nav-label">Profile</span>
+            </a>
+        </nav>
 
         <audio id="audioElement"></audio>
     </div>
@@ -178,8 +270,27 @@
         const db = firebase.firestore();
     </script>
 
-    <!-- ✅ FIXED PATHS - Root level files -->
     <script src="player.js"></script>
     <script src="app.js"></script>
+    
+    <!-- PWA Install -->
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('✅ Service Worker Registered'))
+                    .catch(err => console.log('❌ SW Error:', err));
+            });
+        }
+        
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            console.log('💾 PWA Install available');
+        });
+    </script>
 </body>
 </html>
