@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="theme-color" content="#4f8ff7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>DreamFM - Premium Audiobooks</title>
     
     <link rel="stylesheet" href="style.css">
@@ -30,14 +32,24 @@
 
         onAuthStateChanged(window.auth, (user) => {
             if (!user) {
-                window.location.href = 'login.html';
+                console.log('❌ Not authenticated - Redirecting...');
+                setTimeout(() => window.location.href = 'login.html', 1000);
             } else {
+                console.log('✅ Authenticated:', user.email);
                 window.currentUser = user;
+                
                 const userName = document.getElementById('userName');
                 const userPhoto = document.getElementById('userPhoto');
+                const drawerPhoto = document.getElementById('drawerPhoto');
+                const userEmail = document.getElementById('userEmail');
                 
-                if (userName) userName.textContent = user.displayName || user.email.split('@')[0];
-                if (userPhoto) userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=4f8ff7&color=fff`;
+                const displayName = user.displayName || user.email.split('@')[0];
+                const photoURL = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=4f8ff7&color=fff`;
+                
+                if (userName) userName.textContent = displayName;
+                if (userPhoto) userPhoto.src = photoURL;
+                if (drawerPhoto) drawerPhoto.src = photoURL;
+                if (userEmail) userEmail.textContent = user.email;
                 
                 document.getElementById('authLoading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
@@ -51,15 +63,18 @@
                 window.location.href = 'login.html';
             } catch (error) {
                 console.error('Logout error:', error);
+                alert('Logout failed: ' + error.message);
             }
         }
     </script>
 </head>
 <body>
-    <!-- Loading -->
+    <!-- Auth Loading Screen -->
     <div id="authLoading" class="auth-loading">
-        <div class="loading-spinner"></div>
-        <p style="color: white; margin-top: 20px;">Loading DreamFM...</p>
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p style="color: white; margin-top: 20px; font-size: 1.1rem;">Loading DreamFM...</p>
+        </div>
     </div>
 
     <!-- Main App -->
@@ -68,7 +83,7 @@
         <!-- Mobile Header -->
         <nav class="navbar">
             <div class="nav-container">
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -80,41 +95,46 @@
                 </div>
                 
                 <div class="user-info">
-                    <img id="userPhoto" class="user-avatar" alt="User">
+                    <img id="userPhoto" class="user-avatar" alt="User" src="">
                 </div>
             </div>
         </nav>
 
-        <!-- Mobile Menu Drawer -->
+        <!-- Mobile Drawer -->
         <div class="mobile-drawer" id="mobileDrawer">
             <div class="drawer-header">
                 <div class="drawer-user">
-                    <img id="drawerPhoto" class="drawer-avatar" alt="User">
-                    <div>
+                    <img id="drawerPhoto" class="drawer-avatar" alt="User" src="">
+                    <div class="drawer-user-text">
                         <h3 id="userName">User</h3>
                         <p id="userEmail">user@email.com</p>
                     </div>
                 </div>
-                <button class="drawer-close" id="drawerClose">✕</button>
+                <button class="drawer-close" id="drawerClose" aria-label="Close">✕</button>
             </div>
             
             <nav class="drawer-nav">
-                <a href="#home" class="drawer-link active">
+                <a href="#home" class="drawer-link active" data-page="home">
                     <span>🏠</span> Home
                 </a>
-                <a href="#library" class="drawer-link">
+                <a href="#library" class="drawer-link" data-page="library">
                     <span>📚</span> My Library
                 </a>
-                <a href="#favorites" class="drawer-link">
+                <a href="#favorites" class="drawer-link" data-page="favorites">
                     <span>❤️</span> Favorites
                 </a>
-                <a href="#settings" class="drawer-link">
+                <a href="#profile" class="drawer-link" data-page="profile">
+                    <span>👤</span> Profile
+                </a>
+                <a href="#settings" class="drawer-link" data-page="settings">
                     <span>⚙️</span> Settings
                 </a>
             </nav>
             
             <div class="drawer-footer">
-                <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+                <button class="btn-logout" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
             </div>
         </div>
 
@@ -122,54 +142,21 @@
 
         <!-- Main Content -->
         <main id="mainContent">
-            <!-- Search Bar (Mobile Friendly) -->
-            <div class="search-section">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Search audiobooks..." class="search-input">
-                </div>
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p>Loading content...</p>
             </div>
-
-            <!-- Categories (Horizontal Scroll) -->
-            <section class="section">
-                <h2 class="section-title">Categories</h2>
-                <div class="categories-scroll">
-                    <button class="category-chip active">All</button>
-                    <button class="category-chip">Fiction</button>
-                    <button class="category-chip">Mystery</button>
-                    <button class="category-chip">Romance</button>
-                    <button class="category-chip">Thriller</button>
-                    <button class="category-chip">Sci-Fi</button>
-                    <button class="category-chip">Fantasy</button>
-                </div>
-            </section>
-
-            <!-- Audiobooks Grid -->
-            <section class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Popular Audiobooks</h2>
-                    <a href="#" class="see-all">See All →</a>
-                </div>
-                
-                <div class="book-grid" id="audiobooksGrid">
-                    <!-- Loading State -->
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                        <p>Loading audiobooks...</p>
-                    </div>
-                </div>
-            </section>
         </main>
 
-        <!-- Mini Player (Bottom) -->
+        <!-- Mini Player -->
         <div id="miniPlayer" class="mini-player" style="display:none;">
             <div class="mini-player-content" id="miniPlayerClick">
-                <img id="miniCover" class="mini-cover" src="" alt="">
+                <img id="miniCover" class="mini-cover" src="" alt="Cover">
                 <div class="mini-info">
                     <div id="miniTitle" class="mini-title">Book Title</div>
-                    <div id="miniAuthor" class="mini-author">Author Name</div>
+                    <div id="miniChapter" class="mini-author">Chapter 1</div>
                 </div>
-                <button id="miniPlayBtn" class="mini-play-btn">▶️</button>
+                <button id="miniPlayBtn" class="mini-play-btn" aria-label="Play">▶️</button>
             </div>
             <div class="mini-progress">
                 <div id="miniProgressBar" class="mini-progress-fill"></div>
@@ -179,36 +166,36 @@
         <!-- Full Player Modal -->
         <div id="fullPlayer" class="full-player" style="display:none;">
             <div class="full-player-header">
-                <button id="closePlayer" class="player-close-btn">▼</button>
+                <button id="closePlayer" class="player-close-btn" aria-label="Close">▼</button>
                 <span class="player-header-title">Now Playing</span>
-                <button class="player-menu-btn">⋮</button>
+                <button class="player-menu-btn" aria-label="Menu">⋮</button>
             </div>
 
             <div class="full-player-content">
                 <div class="player-cover">
-                    <img id="playerCover" src="" alt="">
+                    <img id="playerCoverImg" src="" alt="Cover">
                 </div>
 
                 <div class="player-info">
-                    <h2 id="playerTitle">Book Title</h2>
+                    <h2 id="playerBookTitle">Book Title</h2>
                     <p id="playerAuthor">Author Name</p>
-                    <p id="playerChapter" class="player-chapter">Chapter 1</p>
+                    <p id="playerChapterTitle" class="player-chapter">Chapter 1</p>
                 </div>
 
                 <div class="player-progress">
                     <input type="range" id="seekBar" class="seek-bar" value="0" min="0" max="100">
                     <div class="time-info">
-                        <span id="currentTime">0:00</span>
-                        <span id="duration">0:00</span>
+                        <span id="currentTimeDisplay">0:00</span>
+                        <span id="durationDisplay">0:00</span>
                     </div>
                 </div>
 
                 <div class="player-controls">
-                    <button id="prevBtn" class="control-btn">⏮️</button>
-                    <button id="rewind10" class="control-btn control-small">-10</button>
-                    <button id="playPauseBtn" class="control-btn control-main">▶️</button>
-                    <button id="forward10" class="control-small">+10</button>
-                    <button id="nextBtn" class="control-btn">⏭️</button>
+                    <button id="prevChapterBtn" class="control-btn" aria-label="Previous">⏮️</button>
+                    <button id="rewind10" class="control-btn control-small" aria-label="Rewind">-10</button>
+                    <button id="playPauseBtn" class="control-btn control-main" aria-label="Play">▶️</button>
+                    <button id="forward10" class="control-btn control-small" aria-label="Forward">+10</button>
+                    <button id="nextChapterBtn" class="control-btn" aria-label="Next">⏭️</button>
                 </div>
 
                 <div class="player-options">
@@ -216,17 +203,21 @@
                         <span>⚡</span>
                         <span id="speedText">1.0x</span>
                     </button>
+                    <button id="volumeBtn" class="option-btn">
+                        <span>🔊</span>
+                        <span>Volume</span>
+                    </button>
                     <button id="chaptersBtn" class="option-btn">
                         <span>📑</span>
                         <span>Chapters</span>
                     </button>
-                    <button id="timerBtn" class="option-btn">
-                        <span>⏰</span>
-                        <span>Sleep Timer</span>
-                    </button>
                 </div>
 
-                <!-- Chapters List -->
+                <div id="volumeControl" class="volume-control-panel" style="display:none;">
+                    <label>Volume</label>
+                    <input type="range" id="volumeSlider" class="volume-slider" value="100" min="0" max="100">
+                </div>
+
                 <div id="chaptersList" class="chapters-list" style="display:none;">
                     <h3>Chapters</h3>
                     <div id="chaptersContent"></div>
@@ -234,10 +225,11 @@
             </div>
         </div>
 
-        <audio id="audioElement"></audio>
+        <!-- Audio Element -->
+        <audio id="audioElement" preload="metadata"></audio>
     </div>
 
-    <!-- Firebase Compat -->
+    <!-- Firebase Compat for legacy code -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -253,9 +245,14 @@
                 appId: "1:634304814330:web:e4fd0cd5e36276c37d3d43"
             });
         }
+        
+        // Global access
+        window.db = firebase.firestore();
+        window.auth = firebase.auth();
     </script>
 
-    <script src="player.js"></script>
+    <!-- App Scripts -->
     <script src="app.js"></script>
+    <script src="player.js"></script>
 </body>
 </html>
