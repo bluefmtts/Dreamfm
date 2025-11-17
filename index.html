@@ -8,14 +8,99 @@
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
     
-    <!-- Firebase SDK (CDN) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getStorage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxXvJt6m-IK2G_EstbvYQZBj5wMBaqFeM",
+            authDomain: "dreamfm-a6694.firebaseapp.com",
+            projectId: "dreamfm-a6694",
+            storageBucket: "dreamfm-a6694.firebasestorage.app",
+            messagingSenderId: "634304814330",
+            appId: "1:634304814330:web:e4fd0cd5e36276c37d3d43",
+            measurementId: "G-EDGXSEEMHL"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.db = getFirestore(app);
+        window.storage = getStorage(app);
+
+        // Global user variable
+        window.currentUser = null;
+
+        // Auth State Check
+        onAuthStateChanged(window.auth, (user) => {
+            if (!user) {
+                // Not logged in - redirect to login
+                console.log('❌ Not authenticated, redirecting to login');
+                window.location.href = 'login.html';
+            } else {
+                // Logged in
+                console.log('✅ Authenticated:', user.email);
+                window.currentUser = user;
+                
+                // Update UI with user info
+                updateUserUI(user);
+                
+                // Hide loading, show app
+                document.getElementById('authLoading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+            }
+        });
+
+        // Update User UI
+        function updateUserUI(user) {
+            const loginBtn = document.getElementById('loginBtn');
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+            const userPhoto = document.getElementById('userPhoto');
+            
+            if (loginBtn) loginBtn.style.display = 'none';
+            
+            if (userInfo) {
+                userInfo.style.display = 'flex';
+                if (userName) userName.textContent = user.displayName || user.email.split('@')[0];
+                if (userPhoto) userPhoto.src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=4f8ff7&color=fff`;
+            }
+        }
+
+        // Logout function
+        window.logout = async function() {
+            try {
+                await signOut(window.auth);
+                localStorage.clear();
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('❌ Logout error:', error);
+            }
+        }
+
+        console.log('🎧 DreamFM Firebase Initialized');
+    </script>
 </head>
 <body>
-    <div id="app">
+    <!-- Auth Loading Screen -->
+    <div id="authLoading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0e27 0%, #1a2140 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div style="text-align: center; color: white;">
+            <div style="width: 50px; height: 50px; border: 4px solid rgba(79, 143, 247, 0.2); border-top-color: #4f8ff7; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <p style="font-size: 1.1rem;">Loading DreamFM...</p>
+        </div>
+    </div>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
+    <!-- Main App (Hidden until authenticated) -->
+    <div id="app" style="display: none;">
         <!-- Navigation Bar -->
         <nav class="navbar">
             <div class="nav-container">
@@ -29,11 +114,11 @@
                     <a href="#profile" class="nav-link">Profile</a>
                 </div>
                 <div class="auth-buttons">
-                    <button id="loginBtn" class="btn btn-primary">Login</button>
+                    <button id="loginBtn" class="btn btn-primary" style="display: none;">Login</button>
                     <div id="userInfo" class="user-info" style="display:none;">
                         <img id="userPhoto" class="user-avatar">
                         <span id="userName"></span>
-                        <button id="logoutBtn" class="btn btn-small">Logout</button>
+                        <button id="logoutBtn" class="btn btn-small" onclick="logout()">Logout</button>
                     </div>
                 </div>
             </div>
@@ -43,7 +128,7 @@
         <main id="mainContent">
             <div class="loading-container">
                 <div class="loading-spinner"></div>
-                <p>Loading DreamFM...</p>
+                <p>Loading audiobooks...</p>
             </div>
         </main>
 
@@ -119,9 +204,38 @@
         <audio id="audioElement" preload="metadata"></audio>
     </div>
 
-    <!-- JavaScript Files (Load in correct order) -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
+    <!-- Firebase Compat Scripts (for old code compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Initialize Compat Mode -->
+    <script>
+        // Initialize Firebase Compat (for existing code)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxXvJt6m-IK2G_EstbvYQZBj5wMBaqFeM",
+            authDomain: "dreamfm-a6694.firebaseapp.com",
+            projectId: "dreamfm-a6694",
+            storageBucket: "dreamfm-a6694.firebasestorage.app",
+            messagingSenderId: "634304814330",
+            appId: "1:634304814330:web:e4fd0cd5e36276c37d3d43"
+        };
+
+        // Only initialize if not already initialized
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Compat references
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        console.log("✅ Firebase Compat Initialized");
+    </script>
+
+    <!-- App Scripts -->
     <script src="js/player.js"></script>
     <script src="js/app.js"></script>
 </body>
