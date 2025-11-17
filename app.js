@@ -1,57 +1,107 @@
 // ============================================
-// DREAMFM - MAIN APP LOGIC
+// DREAMFM - MOBILE APP LOGIC
 // ============================================
 
 console.log("🚀 DreamFM App Starting...");
 
-// Initialize App
+// Global Variables
+window.allAudiobooks = [];
+let currentFilter = 'all';
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ DOM Loaded");
+    setupMobileNavigation();
     setupEventListeners();
-    loadHomePage();
+    
+    // Load home page after auth check
+    setTimeout(() => {
+        if (window.currentUser) {
+            loadHomePage();
+        }
+    }, 1500);
 });
 
-// Setup Event Listeners
-function setupEventListeners() {
-    // Login button
-    const loginBtn = document.getElementById('loginBtn');
-    if (loginBtn) {
-        loginBtn.addEventListener('click', loginWithGoogle);
+// ============================================
+// MOBILE NAVIGATION
+// ============================================
+
+function setupMobileNavigation() {
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const drawerClose = document.getElementById('drawerClose');
+
+    function openDrawer() {
+        mobileDrawer.classList.add('active');
+        drawerOverlay.classList.add('active');
+        mobileMenuBtn.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
-    
-    // Logout button
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
+
+    function closeDrawer() {
+        mobileDrawer.classList.remove('active');
+        drawerOverlay.classList.remove('active');
+        mobileMenuBtn.classList.remove('active');
+        document.body.style.overflow = '';
     }
-    
+
+    mobileMenuBtn?.addEventListener('click', openDrawer);
+    drawerClose?.addEventListener('click', closeDrawer);
+    drawerOverlay?.addEventListener('click', closeDrawer);
+
     // Navigation links
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
+    document.querySelectorAll('.drawer-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const page = link.getAttribute('href').substring(1);
+            const page = link.dataset.page;
+            
+            // Update active state
+            document.querySelectorAll('.drawer-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
+            // Navigate
             navigateTo(page);
+            closeDrawer();
         });
     });
-    
-    console.log("✅ Event listeners setup complete");
 }
 
-// Navigation System
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+function setupEventListeners() {
+    // Prevent pull-to-refresh
+    let lastTouchY = 0;
+    const mainContent = document.getElementById('mainContent');
+
+    mainContent?.addEventListener('touchstart', (e) => {
+        lastTouchY = e.touches[0].clientY;
+    }, { passive: true });
+
+    mainContent?.addEventListener('touchmove', (e) => {
+        const touchY = e.touches[0].clientY;
+        const diff = touchY - lastTouchY;
+        
+        if (mainContent.scrollTop === 0 && diff > 0) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    console.log("✅ Event listeners setup");
+}
+
+// ============================================
+// NAVIGATION SYSTEM
+// ============================================
+
 function navigateTo(page) {
     console.log("📍 Navigating to:", page);
     
-    // Update active nav
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    const activeLink = document.querySelector(`[href="#${page}"]`);
-    if (activeLink) {
-        activeLink.classList.add('active');
-    }
-    
-    // Load page content
     switch(page) {
         case 'home':
             loadHomePage();
@@ -59,8 +109,14 @@ function navigateTo(page) {
         case 'library':
             loadLibraryPage();
             break;
+        case 'favorites':
+            loadFavoritesPage();
+            break;
         case 'profile':
             loadProfilePage();
+            break;
+        case 'settings':
+            loadSettingsPage();
             break;
         default:
             loadHomePage();
@@ -74,70 +130,70 @@ function navigateTo(page) {
 function loadHomePage() {
     const mainContent = document.getElementById('mainContent');
     
-    if (!mainContent) {
-        console.error("❌ mainContent element not found!");
-        return;
-    }
-    
     console.log("📄 Loading Home Page...");
     
     mainContent.innerHTML = `
         <div class="home-page">
-            <div class="hero">
-                <h1>🎧 Welcome to DreamFM</h1>
-                <p>Premium Audiobooks at Your Fingertips</p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <div class="stat-number" id="totalBooks">-</div>
-                        <div class="stat-label">Audiobooks</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">Free</div>
-                        <div class="stat-label">Unlimited Streaming</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">HD</div>
-                        <div class="stat-label">Audio Quality</div>
-                    </div>
+            <div class="search-section">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search audiobooks..." class="search-input">
                 </div>
             </div>
-            
-            <div class="section">
-                <h2>🔥 Featured Audiobooks</h2>
+
+            <section class="section">
+                <h2 class="section-title">Categories</h2>
+                <div class="categories-scroll">
+                    <button class="category-chip active" onclick="filterByCategory('all')">All</button>
+                    <button class="category-chip" onclick="filterByCategory('Fiction')">Fiction</button>
+                    <button class="category-chip" onclick="filterByCategory('Romance')">Romance</button>
+                    <button class="category-chip" onclick="filterByCategory('Mystery')">Mystery</button>
+                    <button class="category-chip" onclick="filterByCategory('Thriller')">Thriller</button>
+                    <button class="category-chip" onclick="filterByCategory('Business')">Business</button>
+                    <button class="category-chip" onclick="filterByCategory('Self-Help')">Self-Help</button>
+                    <button class="category-chip" onclick="filterByCategory('Horror')">Horror</button>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Featured Audiobooks</h2>
+                    <span class="books-count" id="booksCount">0 books</span>
+                </div>
+                
                 <div id="featuredBooks" class="book-grid">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                         <p>Loading audiobooks...</p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="section">
-                <h2>📚 Browse by Category</h2>
-                <div class="categories">
-                    <div class="category-card" onclick="filterByCategory('Fiction')">📚 Fiction</div>
-                    <div class="category-card" onclick="filterByCategory('Business')">💼 Business</div>
-                    <div class="category-card" onclick="filterByCategory('Self-Help')">🧠 Self-Help</div>
-                    <div class="category-card" onclick="filterByCategory('Romance')">❤️ Romance</div>
-                    <div class="category-card" onclick="filterByCategory('Thriller')">🔍 Thriller</div>
-                    <div class="category-card" onclick="filterByCategory('Horror')">🎭 Horror</div>
-                    <div class="category-card" onclick="filterByCategory('Mystery')">🕵️ Mystery</div>
-                </div>
-            </div>
+            </section>
         </div>
     `;
     
-    // Load audiobooks from Firestore
+    // Load audiobooks
     loadAudiobooks();
+    
+    // Setup search
+    setTimeout(() => {
+        const searchInput = document.getElementById('searchInput');
+        searchInput?.addEventListener('input', (e) => {
+            searchBooks(e.target.value);
+        });
+    }, 500);
 }
 
-// Load Audiobooks from Firestore
+// ============================================
+// LOAD AUDIOBOOKS FROM FIRESTORE
+// ============================================
+
 async function loadAudiobooks() {
     try {
         console.log("📡 Fetching audiobooks from Firestore...");
         
-        const snapshot = await db.collection('audiobooks')
+        const snapshot = await window.db.collection('audiobooks')
             .orderBy('createdAt', 'desc')
+            .limit(50)
             .get();
         
         const booksContainer = document.getElementById('featuredBooks');
@@ -146,17 +202,17 @@ async function loadAudiobooks() {
             console.warn("⚠️ No audiobooks found");
             booksContainer.innerHTML = `
                 <div class="no-books">
-                    <div style="font-size: 4rem; margin-bottom: 20px;">📚</div>
-                    <h3>No audiobooks yet</h3>
-                    <p>Add some books to get started!</p>
+                    <div class="no-books-icon">📚</div>
+                    <h3>No Audiobooks Yet</h3>
+                    <p>Add some books from admin panel</p>
                 </div>
             `;
+            
+            updateBooksCount(0);
             return;
         }
         
-        console.log(`✅ Loaded ${snapshot.size} audiobooks`);
-        
-        // Store all books in window object
+        // Store all books
         window.allAudiobooks = [];
         snapshot.forEach(doc => {
             window.allAudiobooks.push({
@@ -165,30 +221,31 @@ async function loadAudiobooks() {
             });
         });
         
-        // Update total count
-        const totalBooksEl = document.getElementById('totalBooks');
-        if (totalBooksEl) {
-            totalBooksEl.textContent = snapshot.size;
-        }
+        console.log(`✅ Loaded ${window.allAudiobooks.length} audiobooks`);
         
         // Display books
         displayBooks(window.allAudiobooks);
+        updateBooksCount(window.allAudiobooks.length);
         
     } catch (error) {
         console.error("❌ Error loading audiobooks:", error);
+        
         const booksContainer = document.getElementById('featuredBooks');
         booksContainer.innerHTML = `
             <div class="error-message">
-                <div style="font-size: 3rem; margin-bottom: 15px;">❌</div>
+                <div class="error-icon">❌</div>
                 <h3>Error Loading Audiobooks</h3>
                 <p>${error.message}</p>
-                <button class="btn btn-primary" onclick="loadAudiobooks()">Retry</button>
+                <button class="btn-retry" onclick="loadAudiobooks()">Retry</button>
             </div>
         `;
     }
 }
 
-// Display Books in Grid
+// ============================================
+// DISPLAY BOOKS
+// ============================================
+
 function displayBooks(books) {
     const booksContainer = document.getElementById('featuredBooks');
     
@@ -200,41 +257,43 @@ function displayBooks(books) {
     if (books.length === 0) {
         booksContainer.innerHTML = `
             <div class="no-books">
-                <div style="font-size: 4rem; margin-bottom: 20px;">🔍</div>
-                <h3>No books found</h3>
-                <p>Try a different filter</p>
+                <div class="no-books-icon">🔍</div>
+                <h3>No Books Found</h3>
+                <p>Try a different category or search</p>
             </div>
         `;
+        updateBooksCount(0);
         return;
     }
     
-    booksContainer.innerHTML = '';
-    
-    books.forEach(book => {
-        booksContainer.innerHTML += createBookCard(book);
-    });
+    booksContainer.innerHTML = books.map(book => createBookCard(book)).join('');
+    updateBooksCount(books.length);
 }
 
-// Create Book Card HTML
+// ============================================
+// CREATE BOOK CARD
+// ============================================
+
 function createBookCard(book) {
-    const rating = book.rating || 0;
+    const rating = book.rating || 4.0;
     const stars = '⭐'.repeat(Math.floor(rating));
     
     return `
         <div class="book-card" onclick="openBook('${book.id}')">
             <div class="book-cover">
-                <img src="${book.coverUrl || 'https://via.placeholder.com/200x300/6B46C1/FFFFFF?text=No+Cover'}" 
+                <img src="${book.coverUrl || 'https://via.placeholder.com/300x400/1a2140/4f8ff7?text=No+Cover'}" 
                      alt="${book.title}"
-                     onerror="this.src='https://via.placeholder.com/200x300/6B46C1/FFFFFF?text=DreamFM'">
+                     onerror="this.src='https://via.placeholder.com/300x400/1a2140/4f8ff7?text=DreamFM'"
+                     loading="lazy">
                 <div class="play-overlay">▶️</div>
-                ${book.language ? `<div class="book-badge">${book.language}</div>` : ''}
+                ${book.language ? `<span class="book-badge">${book.language}</span>` : ''}
             </div>
             <div class="book-info">
-                <h3 class="book-title">${book.title}</h3>
-                <p class="book-author">${book.author || 'Unknown Author'}</p>
+                <div class="book-title">${book.title}</div>
+                <div class="book-author">${book.author || 'Unknown Author'}</div>
                 <div class="book-meta">
-                    <span class="book-duration">🕐 ${book.duration || 'N/A'}</span>
-                    <span class="book-chapters">📑 ${book.totalChapters || 0} Ch</span>
+                    <span class="book-duration">⏱️ ${book.duration || 'N/A'}</span>
+                    <span class="book-chapters">📑 ${book.totalChapters || 0}</span>
                 </div>
                 <div class="book-rating">
                     ${stars} <span class="rating-text">${rating.toFixed(1)}</span>
@@ -244,38 +303,83 @@ function createBookCard(book) {
     `;
 }
 
-// Open Book (Play Audiobook)
-function openBook(bookId) {
+// ============================================
+// FILTER & SEARCH
+// ============================================
+
+function filterByCategory(category) {
+    console.log("🔍 Filtering by:", category);
+    
+    // Update active chip
+    document.querySelectorAll('.category-chip').forEach(chip => {
+        chip.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    currentFilter = category;
+    
+    if (category === 'all') {
+        displayBooks(window.allAudiobooks);
+    } else {
+        const filtered = window.allAudiobooks.filter(book => 
+            book.category === category
+        );
+        displayBooks(filtered);
+    }
+}
+
+function searchBooks(query) {
+    if (!query || query.trim() === '') {
+        if (currentFilter === 'all') {
+            displayBooks(window.allAudiobooks);
+        } else {
+            filterByCategory(currentFilter);
+        }
+        return;
+    }
+    
+    const searchTerm = query.toLowerCase().trim();
+    const filtered = window.allAudiobooks.filter(book => 
+        book.title.toLowerCase().includes(searchTerm) ||
+        (book.author && book.author.toLowerCase().includes(searchTerm)) ||
+        (book.category && book.category.toLowerCase().includes(searchTerm))
+    );
+    
+    displayBooks(filtered);
+}
+
+function updateBooksCount(count) {
+    const booksCountEl = document.getElementById('booksCount');
+    if (booksCountEl) {
+        booksCountEl.textContent = `${count} book${count !== 1 ? 's' : ''}`;
+    }
+}
+
+// ============================================
+// OPEN BOOK (PLAY)
+// ============================================
+
+window.openBook = function(bookId) {
     console.log("📖 Opening book:", bookId);
     
-    // Find book in window.allAudiobooks
     const book = window.allAudiobooks.find(b => b.id === bookId);
     
     if (book) {
-        playAudiobook(bookId, book);
+        // Call player function
+        if (typeof playAudiobook === 'function') {
+            playAudiobook(bookId, book);
+        } else {
+            console.error("❌ playAudiobook function not found");
+            alert("Player not ready. Please refresh the page.");
+        }
     } else {
         console.error("❌ Book not found:", bookId);
         alert("Book not found!");
     }
 }
 
-// Filter by Category
-function filterByCategory(category) {
-    console.log("🔍 Filtering by category:", category);
-    
-    const filtered = window.allAudiobooks.filter(book => 
-        book.category === category
-    );
-    
-    // Update page title
-    const mainContent = document.getElementById('mainContent');
-    const sectionTitle = mainContent.querySelector('.section h2');
-    if (sectionTitle) {
-        sectionTitle.textContent = `📚 ${category} Books`;
-    }
-    
-    displayBooks(filtered);
-}
+// Make filterByCategory global
+window.filterByCategory = filterByCategory;
 
 // ============================================
 // LIBRARY PAGE
@@ -287,15 +391,14 @@ function loadLibraryPage() {
     mainContent.innerHTML = `
         <div class="library-page">
             <div class="library-header">
-                <h1>📚 Audiobook Library</h1>
-                <div class="library-controls">
-                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search books...">
-                    <select id="sortSelect" class="sort-select">
-                        <option value="recent">Recent</option>
-                        <option value="popular">Popular</option>
-                        <option value="rating">Highest Rated</option>
-                        <option value="title">Title A-Z</option>
-                    </select>
+                <h1>📚 My Library</h1>
+                <p>All your audiobooks in one place</p>
+            </div>
+            
+            <div class="search-section">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="librarySearch" placeholder="Search library..." class="search-input">
                 </div>
             </div>
             
@@ -305,7 +408,6 @@ function loadLibraryPage() {
                 <button class="filter-chip" onclick="filterLibrary('Romance')">Romance</button>
                 <button class="filter-chip" onclick="filterLibrary('Thriller')">Thriller</button>
                 <button class="filter-chip" onclick="filterLibrary('Business')">Business</button>
-                <button class="filter-chip" onclick="filterLibrary('Self-Help')">Self-Help</button>
             </div>
             
             <div id="libraryBooks" class="book-grid">
@@ -317,114 +419,46 @@ function loadLibraryPage() {
         </div>
     `;
     
-    // Load all books
-    loadLibraryBooks();
+    displayBooks(window.allAudiobooks);
     
-    // Setup search and sort
     setTimeout(() => {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                searchBooks(e.target.value);
-            });
-        }
-        
-        const sortSelect = document.getElementById('sortSelect');
-        if (sortSelect) {
-            sortSelect.addEventListener('change', (e) => {
-                sortBooks(e.target.value);
-            });
-        }
-    }, 100);
-}
-
-async function loadLibraryBooks() {
-    try {
-        const snapshot = await db.collection('audiobooks').get();
-        
-        window.allAudiobooks = [];
-        snapshot.forEach(doc => {
-            window.allAudiobooks.push({
-                id: doc.id,
-                ...doc.data()
-            });
+        const librarySearch = document.getElementById('librarySearch');
+        librarySearch?.addEventListener('input', (e) => {
+            searchBooks(e.target.value);
         });
-        
-        displayLibraryBooks(window.allAudiobooks);
-        
-    } catch (error) {
-        console.error("Error loading library:", error);
-    }
+    }, 300);
 }
 
-function displayLibraryBooks(books) {
-    const container = document.getElementById('libraryBooks');
-    if (!container) return;
-    
-    if (books.length === 0) {
-        container.innerHTML = `
-            <div class="no-books">
-                <h3>No books found</h3>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = '';
-    books.forEach(book => {
-        container.innerHTML += createBookCard(book);
-    });
-}
-
-function filterLibrary(category) {
-    // Update active chip
+window.filterLibrary = function(category) {
     document.querySelectorAll('.filter-chip').forEach(chip => {
         chip.classList.remove('active');
     });
     event.target.classList.add('active');
     
-    if (category === 'all') {
-        displayLibraryBooks(window.allAudiobooks);
-    } else {
-        const filtered = window.allAudiobooks.filter(book => book.category === category);
-        displayLibraryBooks(filtered);
-    }
+    filterByCategory(category);
 }
 
-function searchBooks(query) {
-    if (!query) {
-        displayLibraryBooks(window.allAudiobooks);
-        return;
-    }
-    
-    const filtered = window.allAudiobooks.filter(book => 
-        book.title.toLowerCase().includes(query.toLowerCase()) ||
-        book.author.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    displayLibraryBooks(filtered);
-}
+// ============================================
+// FAVORITES PAGE
+// ============================================
 
-function sortBooks(sortBy) {
-    let sorted = [...window.allAudiobooks];
+function loadFavoritesPage() {
+    const mainContent = document.getElementById('mainContent');
     
-    switch(sortBy) {
-        case 'popular':
-            sorted.sort((a, b) => (b.plays || 0) - (a.plays || 0));
-            break;
-        case 'rating':
-            sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-            break;
-        case 'title':
-            sorted.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-        case 'recent':
-        default:
-            // Already sorted by createdAt
-            break;
-    }
-    
-    displayLibraryBooks(sorted);
+    mainContent.innerHTML = `
+        <div class="favorites-page">
+            <div class="page-header">
+                <h1>❤️ Favorites</h1>
+                <p>Your favorite audiobooks</p>
+            </div>
+            
+            <div class="no-books">
+                <div class="no-books-icon">❤️</div>
+                <h3>No Favorites Yet</h3>
+                <p>Start adding books to your favorites</p>
+            </div>
+        </div>
+    `;
 }
 
 // ============================================
@@ -434,16 +468,15 @@ function sortBooks(sortBy) {
 function loadProfilePage() {
     const mainContent = document.getElementById('mainContent');
     
-    if (!window.currentUser) {
+    const user = window.currentUser;
+    
+    if (!user) {
         mainContent.innerHTML = `
             <div class="profile-page">
-                <div class="auth-container">
-                    <div style="font-size: 5rem; margin-bottom: 20px;">🔒</div>
-                    <h1>Login Required</h1>
-                    <p>Please login to access your profile</p>
-                    <button onclick="loginWithGoogle()" class="btn btn-primary">
-                        🔐 Login with Google
-                    </button>
+                <div class="no-auth">
+                    <div class="no-books-icon">🔒</div>
+                    <h3>Not Logged In</h3>
+                    <p>Please login to view profile</p>
                 </div>
             </div>
         `;
@@ -453,44 +486,98 @@ function loadProfilePage() {
     mainContent.innerHTML = `
         <div class="profile-page">
             <div class="profile-header">
-                <img src="${window.currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + window.currentUser.email}" 
-                     class="profile-avatar-large">
-                <h1>${window.currentUser.displayName || 'User'}</h1>
-                <p>${window.currentUser.email}</p>
+                <img src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + user.email + '&background=4f8ff7&color=fff'}" 
+                     class="profile-avatar">
+                <h1>${user.displayName || 'User'}</h1>
+                <p>${user.email}</p>
             </div>
             
             <div class="profile-stats">
                 <div class="stat-card">
                     <div class="stat-icon">📚</div>
-                    <h3>0</h3>
-                    <p>Books Played</p>
+                    <h3>${window.allAudiobooks.length}</h3>
+                    <p>Books Available</p>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">⏰</div>
                     <h3>0h</h3>
-                    <p>Hours Listened</p>
+                    <p>Listened</p>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">❤️</div>
                     <h3>0</h3>
                     <p>Favorites</p>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🏆</div>
-                    <h3>Member</h3>
-                    <p>Status</p>
-                </div>
             </div>
             
-            <div class="profile-sections">
-                <div class="section">
-                    <h2>Continue Listening</h2>
-                    <p style="color: rgba(255,255,255,0.6);">No recent books</p>
+            <div class="profile-actions">
+                <button class="action-btn" onclick="navigateTo('library')">
+                    <span>📚</span> Browse Library
+                </button>
+                <button class="action-btn" onclick="navigateTo('settings')">
+                    <span>⚙️</span> Settings
+                </button>
+                <button class="action-btn danger" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================
+// SETTINGS PAGE
+// ============================================
+
+function loadSettingsPage() {
+    const mainContent = document.getElementById('mainContent');
+    
+    mainContent.innerHTML = `
+        <div class="settings-page">
+            <div class="page-header">
+                <h1>⚙️ Settings</h1>
+                <p>Customize your experience</p>
+            </div>
+            
+            <div class="settings-list">
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-icon">🌙</span>
+                        <div>
+                            <h3>Dark Mode</h3>
+                            <p>Always enabled</p>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="section">
-                    <h2>Favorites</h2>
-                    <p style="color: rgba(255,255,255,0.6);">No favorites yet</p>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-icon">🔔</span>
+                        <div>
+                            <h3>Notifications</h3>
+                            <p>Coming soon</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-icon">📥</span>
+                        <div>
+                            <h3>Downloads</h3>
+                            <p>Manage offline books</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <span class="setting-icon">ℹ️</span>
+                        <div>
+                            <h3>About</h3>
+                            <p>DreamFM v1.0.0</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -501,14 +588,33 @@ function loadProfilePage() {
 // UTILITY FUNCTIONS
 // ============================================
 
-// Add sample audiobook (for testing)
-async function addSampleAudiobook() {
+// Toast Notification
+function showToast(message) {
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+window.showToast = showToast;
+
+// Add sample book (for testing)
+window.addSampleAudiobook = async function() {
     try {
-        await db.collection('audiobooks').add({
-            title: "Sample Audiobook " + Date.now(),
+        await window.db.collection('audiobooks').add({
+            title: "Sample Book " + Date.now(),
             author: "Test Author",
             narrator: "AI Voice",
-            coverUrl: "https://picsum.photos/400/600?random=" + Date.now(),
+            coverUrl: "https://picsum.photos/300/400?random=" + Date.now(),
             description: "This is a test audiobook",
             category: "Fiction",
             language: "English",
@@ -519,28 +625,25 @@ async function addSampleAudiobook() {
             audioSlug: "sample-" + Date.now(),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        console.log("✅ Sample audiobook added!");
+        
+        showToast("✅ Sample book added!");
         loadAudiobooks();
     } catch (error) {
-        console.error("❌ Error adding sample:", error);
+        console.error("❌ Error:", error);
+        showToast("❌ Error adding book");
     }
 }
 
-// Console helper
 console.log(`
-%c🎧 DreamFM Console Commands 🎧
+%c🎧 DreamFM Loaded Successfully! 🎧
 
-%caddSampleAudiobook() %c- Add a test book
+%caddSampleAudiobook() %c- Add test book
 %cloadAudiobooks() %c- Reload books
 %cnaviggateTo('home') %c- Go to home
-%cnaviggateTo('library') %c- Go to library
-%cnaviggateTo('profile') %c- Go to profile
 
 `, 
-'font-size: 16px; font-weight: bold; color: #6B46C1;',
-'color: #9333ea; font-weight: bold;', 'color: #ccc;',
-'color: #9333ea; font-weight: bold;', 'color: #ccc;',
-'color: #9333ea; font-weight: bold;', 'color: #ccc;',
-'color: #9333ea; font-weight: bold;', 'color: #ccc;',
-'color: #9333ea; font-weight: bold;', 'color: #ccc;'
+'font-size: 16px; font-weight: bold; color: #4f8ff7;',
+'color: #4f8ff7; font-weight: bold;', 'color: #ccc;',
+'color: #4f8ff7; font-weight: bold;', 'color: #ccc;',
+'color: #4f8ff7; font-weight: bold;', 'color: #ccc;'
 );
