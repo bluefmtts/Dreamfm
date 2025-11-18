@@ -146,7 +146,7 @@ html {
 }
 
 /* ===================================
-   CATEGORIES GRID - MOBILE
+   HOME PAGE CATEGORIES GRID
    =================================== */
 .categories-grid {
     display: grid;
@@ -183,6 +183,479 @@ html {
 
 .category-card:active i {
     color: white;
+}
+
+/* ===================================
+   LIBRARY PAGE - MOBILE FIRST (FIXED)
+   =================================== */
+.library-page {
+    padding: 15px 20px 140px;
+    min-height: 100vh;
+}
+
+.library-header {
+    margin-bottom: 20px;
+}
+
+.library-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #e91e63);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Search & Sort Controls */
+.library-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.search-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 15px 12px 40px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    color: white;
+    font-size: 0.85rem;
+}
+
+.search-input::placeholder {
+    color: var(--text-gray);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.sort-select {
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    color: white;
+    font-size: 0.85rem;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.sort-select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.sort-select option {
+    background: var(--bg-card);
+    color: white;
+}
+
+/* Categories Section */
+.library-categories-section {
+    margin-bottom: 30px;
+}
+
+.total-count {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+.categories-grid-library {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.category-card-lib {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-card-lib::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--accent), #e91e63);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+}
+
+.category-card-lib:active {
+    transform: scale(0.95);
+}
+
+.category-card-lib:active::before {
+    opacity: 0.2;
+}
+
+.category-icon-lib {
+    font-size: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.category-info {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.category-info h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.book-count {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+}
+
+/* All Books Grid */
+.all-books-section {
+    margin-top: 30px;
+}
+
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.library-book-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.library-book-card:active {
+    transform: scale(0.95);
+}
+
+.library-book-cover {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+}
+
+.library-book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.book-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.library-book-info {
+    padding: 12px;
+}
+
+.library-book-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+}
+
+.library-book-author {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.library-book-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-gray);
+}
+
+.library-book-meta i {
+    margin-right: 4px;
+}
+
+/* ===================================
+   CATEGORY MODAL (BOTTOM SHEET)
+   =================================== */
+.category-modal-lib {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+}
+
+.category-modal-lib.active .modal-overlay-lib {
+    opacity: 1;
+}
+
+.category-modal-lib.active .modal-content-lib {
+    transform: translateY(0);
+}
+
+.modal-overlay-lib {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-content-lib {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 85vh;
+    background: linear-gradient(135deg, #1a1a1a, #2d1b33);
+    border-radius: 24px 24px 0 0;
+    padding: 0 20px 20px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    overflow-y: auto;
+    box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    margin: 12px auto 20px;
+}
+
+.modal-header-lib {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #1a1a1a, #2d1b33);
+    z-index: 10;
+}
+
+.modal-header-lib h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.close-modal-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.close-modal-btn:active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0.9);
+}
+
+.modal-books-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.modal-book-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.modal-book-card:active {
+    transform: scale(0.95);
+}
+
+.modal-book-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.modal-book-info {
+    padding: 10px;
+}
+
+.modal-book-info h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.modal-book-info p {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.modal-book-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+}
+
+/* ===================================
+   PROFILE PAGE
+   =================================== */
+.profile-page {
+    padding: 20px 20px 100px;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.profile-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 3px solid var(--accent);
+}
+
+.profile-header h1 {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+}
+
+.profile-header p {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.stat-icon {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+}
+
+.stat-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.stat-card p {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+}
+
+.profile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.profile-btn {
+    background: var(--bg-card);
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.profile-btn:active {
+    background: var(--accent);
 }
 
 /* ===================================
@@ -482,225 +955,6 @@ html {
 }
 
 /* ===================================
-   LIBRARY PAGE - GRID
-   =================================== */
-.library-page {
-    padding: 15px 20px 100px;
-}
-
-.library-header h1 {
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-}
-
-.library-controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.search-input {
-    flex: 1;
-    padding: 10px 15px;
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 25px;
-    color: white;
-    font-size: 0.85rem;
-}
-
-.sort-select {
-    padding: 10px 15px;
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 25px;
-    color: white;
-    font-size: 0.85rem;
-}
-
-.filter-chips {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    scrollbar-width: none;
-}
-
-.filter-chips::-webkit-scrollbar {
-    display: none;
-}
-
-.filter-chip {
-    padding: 8px 15px;
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 20px;
-    color: var(--text-gray);
-    font-size: 0.75rem;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.filter-chip.active {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
-
-.library-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
-
-.library-book-card {
-    background: var(--bg-card);
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.library-book-cover {
-    position: relative;
-    width: 100%;
-    height: 220px;
-}
-
-.library-book-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.book-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: var(--accent);
-    color: white;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.65rem;
-}
-
-.library-book-info {
-    padding: 10px;
-}
-
-.library-book-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-.library-book-author {
-    font-size: 0.7rem;
-    color: var(--text-gray);
-    margin-bottom: 8px;
-}
-
-.library-book-meta {
-    display: flex;
-    gap: 10px;
-    font-size: 0.65rem;
-    color: var(--text-gray);
-    margin-bottom: 5px;
-}
-
-.library-book-rating {
-    font-size: 0.75rem;
-}
-
-/* ===================================
-   PROFILE PAGE
-   =================================== */
-.profile-page {
-    padding: 20px 20px 100px;
-}
-
-.profile-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.profile-avatar-large {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin-bottom: 15px;
-    border: 3px solid var(--accent);
-}
-
-.profile-header h1 {
-    font-size: 1.3rem;
-    margin-bottom: 5px;
-}
-
-.profile-header p {
-    color: var(--text-gray);
-    font-size: 0.85rem;
-}
-
-.profile-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 25px;
-}
-
-.stat-card {
-    background: var(--bg-card);
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
-}
-
-.stat-icon {
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-}
-
-.stat-card h3 {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-}
-
-.stat-card p {
-    font-size: 0.7rem;
-    color: var(--text-gray);
-}
-
-.profile-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 30px;
-}
-
-.profile-btn {
-    background: var(--bg-card);
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    color: white;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-}
-
-.profile-btn:active {
-    background: var(--accent);
-}
-
-/* ===================================
    LOADING & STATES
    =================================== */
 .loading-container {
@@ -847,6 +1101,25 @@ input, select, button {
         gap: 20px;
     }
     
+    .categories-grid-library {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .modal-books-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .modal-content-lib {
+        max-width: 600px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100%);
+        border-radius: 24px;
+    }
+    
+    .category-modal-lib.active .modal-content-lib {
+        transform: translateX(-50%) translateY(0);
+    }
+    
     .nav-arrows {
         display: flex;
         gap: 10px;
@@ -873,6 +1146,14 @@ input, select, button {
     }
     
     .library-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .categories-grid-library {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .modal-books-grid {
         grid-template-columns: repeat(4, 1fr);
     }
 }
