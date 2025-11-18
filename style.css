@@ -61,7 +61,7 @@ html {
 }
 
 /* ===================================
-   HORIZONTAL SCROLL - PROPER
+   HORIZONTAL SCROLL - PROPER (SIRF 4 BOOKS) ✅
    =================================== */
 .carousel {
     display: flex;
@@ -79,19 +79,19 @@ html {
 }
 
 /* ===================================
-   AUDIO CARD - MOBILE OPTIMIZED
+   AUDIO CARD - MOBILE OPTIMIZED (BIGGER SIZE) ✅
    =================================== */
 .audio-card {
-    flex: 0 0 140px;
-    width: 140px;
+    flex: 0 0 150px;
+    width: 150px;
     scroll-snap-align: start;
     cursor: pointer;
 }
 
 .card-image {
     position: relative;
-    width: 140px;
-    height: 190px;
+    width: 150px;
+    height: 200px;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 8px;
@@ -1087,13 +1087,13 @@ input, select, button {
     }
     
     .audio-card {
-        flex: 0 0 160px;
-        width: 160px;
+        flex: 0 0 170px;
+        width: 170px;
     }
     
     .card-image {
-        width: 160px;
-        height: 220px;
+        width: 170px;
+        height: 230px;
     }
     
     .library-grid {
