@@ -205,10 +205,10 @@ async function loadAudiobooks() {
             });
         });
         
-        // Display in different sections
-        displayFeaturedBooks(window.allAudiobooks.slice(0, 10));
-        displayRecentBooks(window.allAudiobooks.slice(0, 10));
-        displayPopularBooks(window.allAudiobooks.slice(0, 10));
+        // Display in different sections - SIRF 4 BOOKS HAR SECTION ME ✅
+        displayFeaturedBooks(window.allAudiobooks.slice(0, 4));
+        displayRecentBooks(window.allAudiobooks.slice(0, 4));
+        displayPopularBooks(window.allAudiobooks.slice(0, 4));
         
     } catch (error) {
         console.error("❌ Error loading audiobooks:", error);
@@ -222,7 +222,7 @@ async function loadAudiobooks() {
     }
 }
 
-// Display Featured Books
+// Display Featured Books - SIRF 4 ✅
 function displayFeaturedBooks(books) {
     const container = document.getElementById('featuredCarousel');
     if (!container) return;
@@ -233,7 +233,7 @@ function displayFeaturedBooks(books) {
     });
 }
 
-// Display Recent Books
+// Display Recent Books - SIRF 4 ✅
 function displayRecentBooks(books) {
     const container = document.getElementById('recentCarousel');
     if (!container) return;
@@ -244,7 +244,7 @@ function displayRecentBooks(books) {
     });
 }
 
-// Display Popular Books
+// Display Popular Books - SIRF 4 ✅
 function displayPopularBooks(books) {
     const container = document.getElementById('popularCarousel');
     if (!container) return;
