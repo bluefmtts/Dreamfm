@@ -73,7 +73,7 @@ function navigateTo(page) {
 }
 
 // ============================================
-// HOME PAGE (CLEANED - NO CATEGORY SECTIONS)
+// HOME PAGE (FINAL VERSION)
 // ============================================
 
 function loadHomePage() {
@@ -124,12 +124,12 @@ function loadHomePage() {
                 </div>
             </section>
             
-            <!-- Section 4: All Audiobooks -->
-            <section class="audio-section">
+            <!-- Section 4: All Audiobooks (GRID - 4 per row) -->
+            <section class="all-audiobooks-section">
                 <div class="section-header">
                     <h2>🎧 All Audiobooks</h2>
                 </div>
-                <div class="carousel" id="allAudiobooksCarousel">
+                <div class="all-audiobooks-grid" id="allAudiobooksGrid">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                     </div>
@@ -179,7 +179,7 @@ async function loadAudiobooks() {
         displayRecentBooks(window.allAudiobooks.slice(0, 4));
         displayPopularBooks(window.allAudiobooks.slice(0, 4));
         
-        // Display ALL audiobooks (same card size, horizontal scroll)
+        // Display ALL audiobooks in GRID (4 per row)
         displayAllAudiobooks(window.allAudiobooks);
         
     } catch (error) {
@@ -230,10 +230,20 @@ function displayPopularBooks(books) {
     });
 }
 
-// Display ALL Audiobooks - Same card size, horizontal scroll ✅
+// Display ALL Audiobooks - Grid Layout (4 per row) ✅
 function displayAllAudiobooks(books) {
-    const container = document.getElementById('allAudiobooksCarousel');
+    const container = document.getElementById('allAudiobooksGrid');
     if (!container) return;
+    
+    if (books.length === 0) {
+        container.innerHTML = `
+            <div class="no-books">
+                <div style="font-size: 3rem; margin-bottom: 15px;">📚</div>
+                <h3>No audiobooks available</h3>
+            </div>
+        `;
+        return;
+    }
     
     container.innerHTML = '';
     books.forEach(book => {
