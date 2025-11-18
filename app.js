@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ DOM Loaded");
     setupEventListeners();
     loadHomePage();
-    initializeUserData(); // Initialize liked books and history
+    initializeUserData();
 });
 
 // User Data Storage (LocalStorage)
@@ -73,7 +73,7 @@ function navigateTo(page) {
 }
 
 // ============================================
-// HOME PAGE (MOBILE-FIRST DESIGN WITH SCROLL)
+// HOME PAGE (CLEANED VERSION)
 // ============================================
 
 function loadHomePage() {
@@ -112,7 +112,7 @@ function loadHomePage() {
                 </div>
             </section>
             
-            <!-- Section 3: Popular -->
+            <!-- Section 3: Most Popular -->
             <section class="audio-section">
                 <div class="section-header">
                     <h2>⭐ Most Popular</h2>
@@ -124,57 +124,96 @@ function loadHomePage() {
                 </div>
             </section>
             
-            <!-- Section 4: Trending Now -->
+            <!-- Section 4: Fiction -->
             <section class="audio-section">
                 <div class="section-header">
-                    <h2>📈 Trending Now</h2>
+                    <h2>📖 Fiction</h2>
                 </div>
-                <div class="carousel" id="trendingCarousel">
+                <div class="carousel" id="fictionCarousel">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                     </div>
                 </div>
             </section>
             
-            <!-- Section 5: Browse by Category -->
+            <!-- Section 5: Romance -->
             <section class="audio-section">
                 <div class="section-header">
-                    <h2>📂 Browse Categories</h2>
+                    <h2>💕 Romance</h2>
                 </div>
-                <div class="categories-grid">
-                    <div class="category-card" onclick="filterByCategory('Fiction')">
-                        <i class="fa-solid fa-book"></i>
-                        <span>Fiction</span>
-                    </div>
-                    <div class="category-card" onclick="filterByCategory('Romance')">
-                        <i class="fa-solid fa-heart"></i>
-                        <span>Romance</span>
-                    </div>
-                    <div class="category-card" onclick="filterByCategory('Thriller')">
-                        <i class="fa-solid fa-mask"></i>
-                        <span>Thriller</span>
-                    </div>
-                    <div class="category-card" onclick="filterByCategory('Business')">
-                        <i class="fa-solid fa-briefcase"></i>
-                        <span>Business</span>
-                    </div>
-                    <div class="category-card" onclick="filterByCategory('Self-Help')">
-                        <i class="fa-solid fa-brain"></i>
-                        <span>Self-Help</span>
-                    </div>
-                    <div class="category-card" onclick="filterByCategory('Horror')">
-                        <i class="fa-solid fa-ghost"></i>
-                        <span>Horror</span>
+                <div class="carousel" id="romanceCarousel">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
                     </div>
                 </div>
             </section>
             
-            <!-- Section 6: All Audiobooks (Scrollable) -->
+            <!-- Section 6: Thriller -->
+            <section class="audio-section">
+                <div class="section-header">
+                    <h2>🔍 Thriller</h2>
+                </div>
+                <div class="carousel" id="thrillerCarousel">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 7: Sci-Fi -->
+            <section class="audio-section">
+                <div class="section-header">
+                    <h2>🚀 Sci-Fi</h2>
+                </div>
+                <div class="carousel" id="scifiCarousel">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 8: Horror -->
+            <section class="audio-section">
+                <div class="section-header">
+                    <h2>👻 Horror</h2>
+                </div>
+                <div class="carousel" id="horrorCarousel">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 9: Business -->
+            <section class="audio-section">
+                <div class="section-header">
+                    <h2>💼 Business</h2>
+                </div>
+                <div class="carousel" id="businessCarousel">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 10: Self-Help -->
+            <section class="audio-section">
+                <div class="section-header">
+                    <h2>🧠 Self-Help</h2>
+                </div>
+                <div class="carousel" id="selfhelpCarousel">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 11: All Audiobooks -->
             <section class="audio-section">
                 <div class="section-header">
                     <h2>🎧 All Audiobooks</h2>
                 </div>
-                <div class="all-audiobooks-grid" id="allAudiobooksGrid">
+                <div class="carousel" id="allAudiobooksCarousel">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                     </div>
@@ -223,9 +262,17 @@ async function loadAudiobooks() {
         displayFeaturedBooks(window.allAudiobooks.slice(0, 4));
         displayRecentBooks(window.allAudiobooks.slice(0, 4));
         displayPopularBooks(window.allAudiobooks.slice(0, 4));
-        displayTrendingBooks(window.allAudiobooks.slice(0, 4));
         
-        // Display ALL books in grid (scrollable)
+        // Display category-wise books (4 per category)
+        displayCategoryBooks('Fiction', 'fictionCarousel');
+        displayCategoryBooks('Romance', 'romanceCarousel');
+        displayCategoryBooks('Thriller', 'thrillerCarousel');
+        displayCategoryBooks('Sci-Fi', 'scifiCarousel');
+        displayCategoryBooks('Horror', 'horrorCarousel');
+        displayCategoryBooks('Business', 'businessCarousel');
+        displayCategoryBooks('Self-Help', 'selfhelpCarousel');
+        
+        // Display ALL audiobooks (horizontal scroll, same size as above)
         displayAllAudiobooks(window.allAudiobooks);
         
     } catch (error) {
@@ -276,32 +323,41 @@ function displayPopularBooks(books) {
     });
 }
 
-// Display Trending Books - SIRF 4 ✅
-function displayTrendingBooks(books) {
-    const container = document.getElementById('trendingCarousel');
+// Display Category Books - SIRF 4 ✅
+function displayCategoryBooks(category, containerId) {
+    const container = document.getElementById(containerId);
     if (!container) return;
     
-    // Sort by rating
-    const sorted = [...books].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    // Filter by category
+    const categoryBooks = window.allAudiobooks.filter(book => book.category === category);
+    
+    if (categoryBooks.length === 0) {
+        container.innerHTML = `
+            <div class="no-books">
+                <p>No ${category} books yet</p>
+            </div>
+        `;
+        return;
+    }
     
     container.innerHTML = '';
-    sorted.forEach(book => {
+    categoryBooks.slice(0, 4).forEach(book => {
         container.innerHTML += createMobileBookCard(book);
     });
 }
 
-// Display ALL Audiobooks in Grid (Scrollable)
+// Display ALL Audiobooks - Same size as above (horizontal scroll) ✅
 function displayAllAudiobooks(books) {
-    const container = document.getElementById('allAudiobooksGrid');
+    const container = document.getElementById('allAudiobooksCarousel');
     if (!container) return;
     
     container.innerHTML = '';
     books.forEach(book => {
-        container.innerHTML += createGridBookCard(book);
+        container.innerHTML += createMobileBookCard(book);
     });
 }
 
-// Create Mobile-Optimized Book Card (Horizontal)
+// Create Mobile-Optimized Book Card (Same for all sections) ✅
 function createMobileBookCard(book) {
     const rating = book.rating || 4.5;
     const plays = book.plays || Math.floor(Math.random() * 10000000);
@@ -321,29 +377,6 @@ function createMobileBookCard(book) {
                     <span><i class="fa-solid fa-star"></i> ${rating.toFixed(1)}</span>
                 </div>
                 <p class="title">${book.title}</p>
-            </div>
-        </div>
-    `;
-}
-
-// Create Grid Book Card (Vertical - for All Audiobooks section)
-function createGridBookCard(book) {
-    const rating = book.rating || 4.5;
-    
-    return `
-        <div class="grid-book-card" onclick="openBook('${book.id}')">
-            <div class="grid-book-cover">
-                <img src="${book.coverUrl || 'https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'}" 
-                     alt="${book.title}"
-                     onerror="this.src='https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'">
-                ${book.language ? `<div class="book-badge">${book.language}</div>` : ''}
-            </div>
-            <div class="grid-book-info">
-                <h3 class="grid-book-title">${book.title}</h3>
-                <p class="grid-book-author">${book.author || 'Unknown'}</p>
-                <div class="grid-book-meta">
-                    <span><i class="fa-solid fa-star" style="color: #ffd700;"></i> ${rating.toFixed(1)}</span>
-                </div>
             </div>
         </div>
     `;
@@ -416,7 +449,7 @@ window.toggleLikeBook = function(bookId) {
     } else {
         // Add to liked (max 5)
         if (likedBooks.length >= 5) {
-            likedBooks.pop(); // Remove oldest
+            likedBooks.pop();
         }
         
         likedBooks.unshift({
@@ -435,20 +468,6 @@ window.toggleLikeBook = function(bookId) {
     // Reload profile if on that page
     if (document.querySelector('.profile-page')) {
         loadProfilePage();
-    }
-}
-
-// Filter by Category
-function filterByCategory(category) {
-    console.log("🔍 Filtering by category:", category);
-    
-    const filtered = window.allAudiobooks.filter(book => book.category === category);
-    
-    // Scroll to all audiobooks section
-    const allSection = document.getElementById('allAudiobooksGrid');
-    if (allSection) {
-        allSection.scrollIntoView({ behavior: 'smooth' });
-        displayAllAudiobooks(filtered);
     }
 }
 
@@ -570,7 +589,6 @@ function loadMembershipPage() {
 
 // Purchase Membership
 window.purchaseMembership = function() {
-    // Simulate payment (You'll integrate Razorpay/Paytm here)
     const confirm = window.confirm('Purchase DreamFM Premium for ₹29/month?');
     
     if (confirm) {
@@ -593,7 +611,6 @@ window.cancelMembership = function() {
 
 // Purchase Coins
 window.purchaseCoins = function(price, coins) {
-    // Simulate payment
     const confirm = window.confirm(`Purchase ${coins} coins for ₹${price}?`);
     
     if (confirm) {
@@ -666,7 +683,7 @@ function loadProfilePage() {
                     <h2>❤️ Liked Audiobooks</h2>
                 </div>
                 ${likedBooks.length > 0 ? `
-                    <div class="profile-books-grid">
+                    <div class="profile-books-carousel">
                         ${likedBooks.map(book => createProfileBookCard(book, 'liked')).join('')}
                     </div>
                 ` : '<p class="empty-state">No liked books yet</p>'}
@@ -678,7 +695,7 @@ function loadProfilePage() {
                     <h2>📖 Recently Played</h2>
                 </div>
                 ${historyBooks.length > 0 ? `
-                    <div class="profile-books-grid">
+                    <div class="profile-books-carousel">
                         ${historyBooks.map(book => createProfileBookCard(book, 'history')).join('')}
                     </div>
                 ` : '<p class="empty-state">No history yet</p>'}
@@ -703,22 +720,24 @@ function loadProfilePage() {
     `;
 }
 
-// Create Profile Book Card
+// Create Profile Book Card (Horizontal scroll, same size as home)
 function createProfileBookCard(book, type) {
     return `
         <div class="profile-book-card" onclick="openBook('${book.id}')">
-            <img src="${book.coverUrl || 'https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'}" 
-                 alt="${book.title}"
-                 onerror="this.src='https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'">
+            <div class="profile-book-cover">
+                <img src="${book.coverUrl || 'https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'}" 
+                     alt="${book.title}"
+                     onerror="this.src='https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'">
+                ${type === 'liked' ? `
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeLikedBook('${book.id}')">
+                        <i class="fa-solid fa-heart-broken"></i>
+                    </button>
+                ` : ''}
+            </div>
             <div class="profile-book-info">
                 <h4>${book.title}</h4>
                 <p>${book.author || 'Unknown'}</p>
             </div>
-            ${type === 'liked' ? `
-                <button class="remove-btn" onclick="event.stopPropagation(); removeLikedBook('${book.id}')">
-                    <i class="fa-solid fa-heart-broken"></i>
-                </button>
-            ` : ''}
         </div>
     `;
 }
