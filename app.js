@@ -73,7 +73,7 @@ function navigateTo(page) {
 }
 
 // ============================================
-// HOME PAGE (SIMPLIFIED - NO CATEGORIES)
+// HOME PAGE (SIMPLE - NO CATEGORIES)
 // ============================================
 
 function loadHomePage() {
@@ -124,12 +124,12 @@ function loadHomePage() {
                 </div>
             </section>
             
-            <!-- Section 4: All Audiobooks (Grid Layout - 4 per row) -->
-            <section class="all-books-section">
+            <!-- Section 4: All Audiobooks (SAME LAYOUT - Horizontal Scroll) -->
+            <section class="audio-section">
                 <div class="section-header">
                     <h2>🎧 All Audiobooks</h2>
                 </div>
-                <div class="all-books-grid" id="allBooksGrid">
+                <div class="carousel" id="allAudiobooksCarousel">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                     </div>
@@ -174,13 +174,13 @@ async function loadAudiobooks() {
             });
         });
         
-        // Display in different sections - SIRF 4 BOOKS HAR SECTION ME ✅
+        // Display in different sections - SIRF 4 BOOKS (except All Audiobooks) ✅
         displayFeaturedBooks(window.allAudiobooks.slice(0, 4));
         displayRecentBooks(window.allAudiobooks.slice(0, 4));
         displayPopularBooks(window.allAudiobooks.slice(0, 4));
         
-        // Display ALL audiobooks in grid (4 per row) ✅
-        displayAllBooksGrid(window.allAudiobooks);
+        // Display ALL audiobooks (horizontal scroll, same card size) ✅
+        displayAllAudiobooks(window.allAudiobooks);
         
     } catch (error) {
         console.error("❌ Error loading audiobooks:", error);
@@ -230,9 +230,9 @@ function displayPopularBooks(books) {
     });
 }
 
-// Display ALL Books in Grid (4 per row, vertical scroll) ✅
-function displayAllBooksGrid(books) {
-    const container = document.getElementById('allBooksGrid');
+// Display ALL Audiobooks - SAME CARD SIZE, Horizontal Scroll ✅
+function displayAllAudiobooks(books) {
+    const container = document.getElementById('allAudiobooksCarousel');
     if (!container) return;
     
     if (books.length === 0) {
@@ -247,11 +247,11 @@ function displayAllBooksGrid(books) {
     
     container.innerHTML = '';
     books.forEach(book => {
-        container.innerHTML += createGridBookCard(book);
+        container.innerHTML += createMobileBookCard(book);
     });
 }
 
-// Create Mobile-Optimized Book Card (Horizontal Carousel) ✅
+// Create Mobile-Optimized Book Card (SAME FOR ALL SECTIONS) ✅
 function createMobileBookCard(book) {
     const rating = book.rating || 4.5;
     const plays = book.plays || Math.floor(Math.random() * 10000000);
@@ -271,32 +271,6 @@ function createMobileBookCard(book) {
                     <span><i class="fa-solid fa-star"></i> ${rating.toFixed(1)}</span>
                 </div>
                 <p class="title">${book.title}</p>
-            </div>
-        </div>
-    `;
-}
-
-// Create Grid Book Card (All Audiobooks Grid - 4 per row) ✅
-function createGridBookCard(book) {
-    const rating = book.rating || 4.5;
-    const plays = book.plays || Math.floor(Math.random() * 10000000);
-    const playsFormatted = formatPlays(plays);
-    
-    return `
-        <div class="grid-book-card" onclick="openBook('${book.id}')">
-            <div class="grid-book-cover">
-                <img src="${book.coverUrl || 'https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'}" 
-                     alt="${book.title}"
-                     onerror="this.src='https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'">
-                <span class="grid-plays-badge">${playsFormatted}+</span>
-            </div>
-            <div class="grid-book-info">
-                <h3 class="grid-book-title">${book.title}</h3>
-                <p class="grid-book-author">${book.author || 'Unknown'}</p>
-                <div class="grid-book-stats">
-                    <span><i class="fa-solid fa-star" style="color: #ffd700;"></i> ${rating.toFixed(1)}</span>
-                    <span><i class="fa-solid fa-play" style="color: #ff6b6b;"></i> ${playsFormatted}</span>
-                </div>
             </div>
         </div>
     `;
