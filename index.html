@@ -25,6 +25,9 @@
     
     <link rel="stylesheet" href="style.css">
     
+    <!-- Razorpay SDK (Optional - Uncomment for real payments) -->
+    <!-- <script src="https://checkout.razorpay.com/v1/checkout.js"></script> -->
+    
     <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -45,13 +48,18 @@
         window.db = getFirestore(app);
         window.currentUser = null;
 
-        onAuthStateChanged(window.auth, (user) => {
+        onAuthStateChanged(window.auth, async (user) => {
             if (!user) {
                 console.log('❌ Not authenticated');
                 window.location.href = 'login.html';
             } else {
                 console.log('✅ Authenticated:', user.email);
                 window.currentUser = user;
+                
+                // Initialize user in Firebase (coins system)
+                if (window.initializeUserInFirebase) {
+                    await window.initializeUserInFirebase(user);
+                }
                 
                 document.getElementById('authLoading').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
@@ -107,7 +115,7 @@
             </div>
         </main>
 
-        <!-- Bottom Navigation (UPDATED - Library → Premium) ✅ -->
+        <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <a href="#home" class="nav-item active" data-page="home">
                 <i class="fa-solid fa-house"></i>
@@ -217,6 +225,8 @@
         const db = firebase.firestore();
     </script>
 
+    <!-- App Scripts (ORDER MATTERS!) -->
+    <script src="coins.js"></script>
     <script src="player.js"></script>
     <script src="app.js"></script>
     <script src="auth.js"></script>
