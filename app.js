@@ -73,7 +73,7 @@ function navigateTo(page) {
 }
 
 // ============================================
-// HOME PAGE (CLEANED VERSION)
+// HOME PAGE (SIMPLIFIED - NO CATEGORIES)
 // ============================================
 
 function loadHomePage() {
@@ -124,96 +124,12 @@ function loadHomePage() {
                 </div>
             </section>
             
-            <!-- Section 4: Fiction -->
-            <section class="audio-section">
-                <div class="section-header">
-                    <h2>📖 Fiction</h2>
-                </div>
-                <div class="carousel" id="fictionCarousel">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section 5: Romance -->
-            <section class="audio-section">
-                <div class="section-header">
-                    <h2>💕 Romance</h2>
-                </div>
-                <div class="carousel" id="romanceCarousel">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section 6: Thriller -->
-            <section class="audio-section">
-                <div class="section-header">
-                    <h2>🔍 Thriller</h2>
-                </div>
-                <div class="carousel" id="thrillerCarousel">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section 7: Sci-Fi -->
-            <section class="audio-section">
-                <div class="section-header">
-                    <h2>🚀 Sci-Fi</h2>
-                </div>
-                <div class="carousel" id="scifiCarousel">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section 8: Horror -->
-            <section class="audio-section">
-                <div class="section-header">
-                    <h2>👻 Horror</h2>
-                </div>
-                <div class="carousel" id="horrorCarousel">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section 9: Business -->
-            <section class="audio-section">
-                <div class="section-header">
-                    <h2>💼 Business</h2>
-                </div>
-                <div class="carousel" id="businessCarousel">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section 10: Self-Help -->
-            <section class="audio-section">
-                <div class="section-header">
-                    <h2>🧠 Self-Help</h2>
-                </div>
-                <div class="carousel" id="selfhelpCarousel">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Section 11: All Audiobooks -->
-            <section class="audio-section">
+            <!-- Section 4: All Audiobooks (Grid Layout - 4 per row) -->
+            <section class="all-books-section">
                 <div class="section-header">
                     <h2>🎧 All Audiobooks</h2>
                 </div>
-                <div class="carousel" id="allAudiobooksCarousel">
+                <div class="all-books-grid" id="allBooksGrid">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                     </div>
@@ -263,17 +179,8 @@ async function loadAudiobooks() {
         displayRecentBooks(window.allAudiobooks.slice(0, 4));
         displayPopularBooks(window.allAudiobooks.slice(0, 4));
         
-        // Display category-wise books (4 per category)
-        displayCategoryBooks('Fiction', 'fictionCarousel');
-        displayCategoryBooks('Romance', 'romanceCarousel');
-        displayCategoryBooks('Thriller', 'thrillerCarousel');
-        displayCategoryBooks('Sci-Fi', 'scifiCarousel');
-        displayCategoryBooks('Horror', 'horrorCarousel');
-        displayCategoryBooks('Business', 'businessCarousel');
-        displayCategoryBooks('Self-Help', 'selfhelpCarousel');
-        
-        // Display ALL audiobooks (horizontal scroll, same size as above)
-        displayAllAudiobooks(window.allAudiobooks);
+        // Display ALL audiobooks in grid (4 per row) ✅
+        displayAllBooksGrid(window.allAudiobooks);
         
     } catch (error) {
         console.error("❌ Error loading audiobooks:", error);
@@ -323,41 +230,28 @@ function displayPopularBooks(books) {
     });
 }
 
-// Display Category Books - SIRF 4 ✅
-function displayCategoryBooks(category, containerId) {
-    const container = document.getElementById(containerId);
+// Display ALL Books in Grid (4 per row, vertical scroll) ✅
+function displayAllBooksGrid(books) {
+    const container = document.getElementById('allBooksGrid');
     if (!container) return;
     
-    // Filter by category
-    const categoryBooks = window.allAudiobooks.filter(book => book.category === category);
-    
-    if (categoryBooks.length === 0) {
+    if (books.length === 0) {
         container.innerHTML = `
             <div class="no-books">
-                <p>No ${category} books yet</p>
+                <div style="font-size: 3rem; margin-bottom: 15px;">📚</div>
+                <h3>No audiobooks available</h3>
             </div>
         `;
         return;
     }
     
     container.innerHTML = '';
-    categoryBooks.slice(0, 4).forEach(book => {
-        container.innerHTML += createMobileBookCard(book);
-    });
-}
-
-// Display ALL Audiobooks - Same size as above (horizontal scroll) ✅
-function displayAllAudiobooks(books) {
-    const container = document.getElementById('allAudiobooksCarousel');
-    if (!container) return;
-    
-    container.innerHTML = '';
     books.forEach(book => {
-        container.innerHTML += createMobileBookCard(book);
+        container.innerHTML += createGridBookCard(book);
     });
 }
 
-// Create Mobile-Optimized Book Card (Same for all sections) ✅
+// Create Mobile-Optimized Book Card (Horizontal Carousel) ✅
 function createMobileBookCard(book) {
     const rating = book.rating || 4.5;
     const plays = book.plays || Math.floor(Math.random() * 10000000);
@@ -377,6 +271,32 @@ function createMobileBookCard(book) {
                     <span><i class="fa-solid fa-star"></i> ${rating.toFixed(1)}</span>
                 </div>
                 <p class="title">${book.title}</p>
+            </div>
+        </div>
+    `;
+}
+
+// Create Grid Book Card (All Audiobooks Grid - 4 per row) ✅
+function createGridBookCard(book) {
+    const rating = book.rating || 4.5;
+    const plays = book.plays || Math.floor(Math.random() * 10000000);
+    const playsFormatted = formatPlays(plays);
+    
+    return `
+        <div class="grid-book-card" onclick="openBook('${book.id}')">
+            <div class="grid-book-cover">
+                <img src="${book.coverUrl || 'https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'}" 
+                     alt="${book.title}"
+                     onerror="this.src='https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'">
+                <span class="grid-plays-badge">${playsFormatted}+</span>
+            </div>
+            <div class="grid-book-info">
+                <h3 class="grid-book-title">${book.title}</h3>
+                <p class="grid-book-author">${book.author || 'Unknown'}</p>
+                <div class="grid-book-stats">
+                    <span><i class="fa-solid fa-star" style="color: #ffd700;"></i> ${rating.toFixed(1)}</span>
+                    <span><i class="fa-solid fa-play" style="color: #ff6b6b;"></i> ${playsFormatted}</span>
+                </div>
             </div>
         </div>
     `;
