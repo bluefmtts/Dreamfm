@@ -7,13 +7,19 @@ console.log('🔐 Auth.js loaded');
 let currentUser = null;
 
 // Listen for auth changes
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
     currentUser = user;
     updateUI(user);
     
     if (user) {
         console.log("✅ User logged in:", user.email);
-        loadUserData(user);
+        
+        // Initialize user in Firebase (coins.js function)
+        if (window.initializeUserInFirebase) {
+            await window.initializeUserInFirebase(user);
+        }
+        
+        await loadUserData(user);
     } else {
         console.log("❌ User logged out");
     }
@@ -105,10 +111,12 @@ async function loadUserData(user) {
                 email: user.email,
                 displayName: user.displayName,
                 photoURL: user.photoURL,
+                coins: 0,
+                membershipStatus: false,
+                membershipExpiry: null,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 favorites: [],
                 listeningHistory: [],
-                isPremium: false,
                 totalListeningTime: 0,
                 lastLogin: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -127,12 +135,26 @@ async function loadUserData(user) {
 
 // Helper: Show Toast
 function showToast(message) {
-    // Check if function exists in pwa-install.js
+    // Check if function exists
     if (typeof window.showToast === 'function') {
         window.showToast(message);
     } else {
-        // Fallback
-        console.log('Toast:', message);
+        // Fallback - create toast
+        const existingToast = document.querySelector('.toast-notification');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 100);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
     }
 }
 
