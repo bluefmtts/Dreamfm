@@ -1,5 +1,5 @@
 // ============================================
-// DREAMFM SECURE AUDIO PLAYER
+// DREAMFM SECURE AUDIO PLAYER (WITH COINS)
 // ============================================
 
 console.log("🎧 Secure Player.js loaded");
@@ -12,7 +12,8 @@ const PlayerState = {
     audioElement: null,
     playbackSpeed: 1.0,
     volume: 1.0,
-    blobUrl: null // For cleanup
+    blobUrl: null,
+    unlockedChapters: [] // Track unlocked chapters
 };
 
 // 🔒 SECURITY: Disable Right Click & DevTools
@@ -25,7 +26,6 @@ document.addEventListener('contextmenu', (e) => {
 
 // 🔒 Disable common download shortcuts
 document.addEventListener('keydown', (e) => {
-    // Ctrl+S, Ctrl+Shift+I, F12, Ctrl+U
     if ((e.ctrlKey && e.key === 's') || 
         (e.ctrlKey && e.shiftKey && e.key === 'I') ||
         e.key === 'F12' ||
@@ -76,11 +76,6 @@ function initializePlayer() {
     PlayerState.audioElement.addEventListener('ended', onAudioEnded);
     PlayerState.audioElement.addEventListener('error', onAudioError);
     
-    // Prevent download attempt
-    PlayerState.audioElement.addEventListener('loadstart', () => {
-        console.log('🔒 Secure streaming active');
-    });
-    
     // Control Buttons
     document.getElementById('miniPlayBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -113,6 +108,7 @@ function playAudiobook(bookId, bookData) {
         ...bookData
     };
     PlayerState.currentChapter = 1;
+    PlayerState.unlockedChapters = [1]; // Chapter 1 always free
     
     updatePlayerUI();
     loadChapter(1);
@@ -121,13 +117,21 @@ function playAudiobook(bookId, bookData) {
     openFullPlayer();
 }
 
-// 🔒 Load Chapter with Blob URL (Anti-Download)
+// 🔒 Load Chapter with Coin Check
 async function loadChapter(chapterNum) {
     const book = PlayerState.currentBook;
     
     if (!book) {
         console.error("❌ No book loaded");
         return;
+    }
+    
+    // Check if chapter needs to be unlocked
+    if (!PlayerState.unlockedChapters.includes(chapterNum)) {
+        const unlocked = await checkAndUnlockChapter(chapterNum);
+        if (!unlocked) {
+            return; // User cancelled or insufficient coins
+        }
     }
     
     PlayerState.currentChapter = chapterNum;
@@ -142,7 +146,6 @@ async function loadChapter(chapterNum) {
     console.log("🔒 Loading secure audio...");
     
     try {
-        // Fetch as blob to hide source
         const response = await fetch(audioUrl);
         
         if (!response.ok) {
@@ -150,11 +153,8 @@ async function loadChapter(chapterNum) {
         }
         
         const blob = await response.blob();
-        
-        // Create blob URL (temporary, not downloadable easily)
         PlayerState.blobUrl = URL.createObjectURL(blob);
         
-        // Load blob URL instead of direct URL
         PlayerState.audioElement.src = PlayerState.blobUrl;
         PlayerState.audioElement.load();
         
@@ -164,6 +164,53 @@ async function loadChapter(chapterNum) {
     } catch (error) {
         console.error('❌ Load error:', error);
         showToast(`❌ Chapter ${chapterNum} not available`);
+    }
+}
+
+// 💰 Check and Unlock Chapter
+async function checkAndUnlockChapter(chapterNum) {
+    const CHAPTER_COST = 10; // 10 coins per chapter
+    
+    // Check if user has membership (free unlock)
+    const membershipStatus = localStorage.getItem('membershipStatus') === 'true';
+    
+    if (membershipStatus) {
+        PlayerState.unlockedChapters.push(chapterNum);
+        showToast(`✅ Chapter ${chapterNum} unlocked (Premium)`);
+        return true;
+    }
+    
+    // Ask user to unlock with coins
+    const confirmUnlock = confirm(`Unlock Chapter ${chapterNum} for ${CHAPTER_COST} coins?`);
+    
+    if (!confirmUnlock) {
+        return false;
+    }
+    
+    // Check if useCoins function exists (from coins.js)
+    if (typeof window.useCoins === 'function') {
+        const success = await window.useCoins(
+            CHAPTER_COST, 
+            `Unlocked Chapter ${chapterNum} of ${PlayerState.currentBook.title}`
+        );
+        
+        if (success) {
+            PlayerState.unlockedChapters.push(chapterNum);
+            return true;
+        } else {
+            // Not enough coins
+            const buyMore = confirm("Not enough coins! Want to buy more?");
+            if (buyMore && typeof navigateTo === 'function') {
+                closeFullPlayer();
+                navigateTo('membership');
+            }
+            return false;
+        }
+    } else {
+        // Fallback if coins.js not loaded
+        console.warn("⚠️ Coins system not loaded");
+        PlayerState.unlockedChapters.push(chapterNum);
+        return true;
     }
 }
 
@@ -335,7 +382,7 @@ function toggleChaptersList() {
     }
 }
 
-// Load Chapters List
+// Load Chapters List (with lock icons)
 function loadChaptersList() {
     const book = PlayerState.currentBook;
     if (!book) return;
@@ -343,15 +390,24 @@ function loadChaptersList() {
     const container = document.getElementById('chaptersContent');
     container.innerHTML = '';
     
+    const membershipStatus = localStorage.getItem('membershipStatus') === 'true';
+    
     for (let i = 1; i <= book.totalChapters; i++) {
         const chapterDiv = document.createElement('div');
         chapterDiv.className = 'chapter-item';
+        
+        const isUnlocked = PlayerState.unlockedChapters.includes(i) || membershipStatus;
+        
         if (i === PlayerState.currentChapter) {
             chapterDiv.classList.add('active');
         }
         
+        const lockIcon = isUnlocked ? 
+            '<i class="fa-solid fa-book-open"></i>' : 
+            '<i class="fa-solid fa-lock"></i> 🪙10';
+        
         chapterDiv.innerHTML = `
-            <i class="fa-solid fa-book-open"></i>
+            ${lockIcon}
             <span>Chapter ${i}</span>
         `;
         
@@ -389,7 +445,6 @@ function formatTime(seconds) {
 
 // Toast Notification
 function showToast(message) {
-    // Remove existing toast
     const existingToast = document.querySelector('.toast-notification');
     if (existingToast) {
         existingToast.remove();
@@ -416,3 +471,5 @@ window.addEventListener('beforeunload', () => {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', initializePlayer);
+
+console.log("✅ Player ready with Coins system");
