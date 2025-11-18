@@ -73,7 +73,7 @@ function navigateTo(page) {
 }
 
 // ============================================
-// HOME PAGE (SIMPLE - NO CATEGORIES)
+// HOME PAGE (CLEANED - NO CATEGORY SECTIONS)
 // ============================================
 
 function loadHomePage() {
@@ -124,7 +124,7 @@ function loadHomePage() {
                 </div>
             </section>
             
-            <!-- Section 4: All Audiobooks (SAME LAYOUT - Horizontal Scroll) -->
+            <!-- Section 4: All Audiobooks -->
             <section class="audio-section">
                 <div class="section-header">
                     <h2>🎧 All Audiobooks</h2>
@@ -174,12 +174,12 @@ async function loadAudiobooks() {
             });
         });
         
-        // Display in different sections - SIRF 4 BOOKS (except All Audiobooks) ✅
+        // Display in different sections - SIRF 4 BOOKS HAR SECTION ME ✅
         displayFeaturedBooks(window.allAudiobooks.slice(0, 4));
         displayRecentBooks(window.allAudiobooks.slice(0, 4));
         displayPopularBooks(window.allAudiobooks.slice(0, 4));
         
-        // Display ALL audiobooks (horizontal scroll, same card size) ✅
+        // Display ALL audiobooks (same card size, horizontal scroll)
         displayAllAudiobooks(window.allAudiobooks);
         
     } catch (error) {
@@ -230,20 +230,10 @@ function displayPopularBooks(books) {
     });
 }
 
-// Display ALL Audiobooks - SAME CARD SIZE, Horizontal Scroll ✅
+// Display ALL Audiobooks - Same card size, horizontal scroll ✅
 function displayAllAudiobooks(books) {
     const container = document.getElementById('allAudiobooksCarousel');
     if (!container) return;
-    
-    if (books.length === 0) {
-        container.innerHTML = `
-            <div class="no-books">
-                <div style="font-size: 3rem; margin-bottom: 15px;">📚</div>
-                <h3>No audiobooks available</h3>
-            </div>
-        `;
-        return;
-    }
     
     container.innerHTML = '';
     books.forEach(book => {
@@ -251,7 +241,7 @@ function displayAllAudiobooks(books) {
     });
 }
 
-// Create Mobile-Optimized Book Card (SAME FOR ALL SECTIONS) ✅
+// Create Mobile-Optimized Book Card
 function createMobileBookCard(book) {
     const rating = book.rating || 4.5;
     const plays = book.plays || Math.floor(Math.random() * 10000000);
@@ -614,7 +604,7 @@ function loadProfilePage() {
     `;
 }
 
-// Create Profile Book Card (Horizontal scroll, same size as home)
+// Create Profile Book Card
 function createProfileBookCard(book, type) {
     return `
         <div class="profile-book-card" onclick="openBook('${book.id}')">
