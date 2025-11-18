@@ -335,14 +335,14 @@ function filterByCategory(category) {
     
     // Wait for library to load, then filter
     setTimeout(() => {
-        if (window.filterLibrary) {
-            window.filterLibrary(category);
+        if (window.openCategoryModal) {
+            window.openCategoryModal(category);
         }
-    }, 100);
+    }, 200);
 }
 
 // ============================================
-// LIBRARY PAGE
+// LIBRARY PAGE (MOBILE-FIRST FIXED)
 // ============================================
 
 function loadLibraryPage() {
@@ -350,33 +350,109 @@ function loadLibraryPage() {
     
     mainContent.innerHTML = `
         <div class="library-page">
+            <!-- Header -->
             <div class="library-header">
-                <h1>📚 Audiobook Library</h1>
-                <div class="library-controls">
-                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search books...">
-                    <select id="sortSelect" class="sort-select">
-                        <option value="recent">Recent</option>
-                        <option value="popular">Popular</option>
-                        <option value="rating">Highest Rated</option>
-                        <option value="title">Title A-Z</option>
-                    </select>
+                <h1>📚 My Library</h1>
+            </div>
+            
+            <!-- Search & Sort -->
+            <div class="library-controls">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search books...">
                 </div>
+                <select id="sortSelect" class="sort-select">
+                    <option value="recent">Recent</option>
+                    <option value="popular">Popular</option>
+                    <option value="rating">Top Rated</option>
+                    <option value="title">A-Z</option>
+                </select>
             </div>
             
-            <div class="filter-chips">
-                <button class="filter-chip active" onclick="filterLibrary('all')">All</button>
-                <button class="filter-chip" onclick="filterLibrary('Fiction')">Fiction</button>
-                <button class="filter-chip" onclick="filterLibrary('Romance')">Romance</button>
-                <button class="filter-chip" onclick="filterLibrary('Thriller')">Thriller</button>
-                <button class="filter-chip" onclick="filterLibrary('Business')">Business</button>
-                <button class="filter-chip" onclick="filterLibrary('Self-Help')">Self-Help</button>
-                <button class="filter-chip" onclick="filterLibrary('Horror')">Horror</button>
-            </div>
+            <!-- Categories Section (Mobile Bottom Sheet Style) -->
+            <section class="library-categories-section">
+                <div class="section-header">
+                    <h2>Browse by Category</h2>
+                </div>
+                <div class="categories-grid-library">
+                    <div class="category-card-lib" onclick="openCategoryModal('Fiction')">
+                        <div class="category-icon-lib">📚</div>
+                        <div class="category-info">
+                            <h3>Fiction</h3>
+                            <p class="book-count" id="count-fiction">0 books</p>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card-lib" onclick="openCategoryModal('Romance')">
+                        <div class="category-icon-lib">💕</div>
+                        <div class="category-info">
+                            <h3>Romance</h3>
+                            <p class="book-count" id="count-romance">0 books</p>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card-lib" onclick="openCategoryModal('Thriller')">
+                        <div class="category-icon-lib">🔍</div>
+                        <div class="category-info">
+                            <h3>Thriller</h3>
+                            <p class="book-count" id="count-thriller">0 books</p>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card-lib" onclick="openCategoryModal('Business')">
+                        <div class="category-icon-lib">💼</div>
+                        <div class="category-info">
+                            <h3>Business</h3>
+                            <p class="book-count" id="count-business">0 books</p>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card-lib" onclick="openCategoryModal('Self-Help')">
+                        <div class="category-icon-lib">🧠</div>
+                        <div class="category-info">
+                            <h3>Self-Help</h3>
+                            <p class="book-count" id="count-self-help">0 books</p>
+                        </div>
+                    </div>
+                    
+                    <div class="category-card-lib" onclick="openCategoryModal('Horror')">
+                        <div class="category-icon-lib">👻</div>
+                        <div class="category-info">
+                            <h3>Horror</h3>
+                            <p class="book-count" id="count-horror">0 books</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
             
-            <div id="libraryBooks" class="library-grid">
-                <div class="loading-container">
-                    <div class="loading-spinner"></div>
-                    <p>Loading library...</p>
+            <!-- All Books Section -->
+            <section class="all-books-section">
+                <div class="section-header">
+                    <h2>All Audiobooks</h2>
+                    <span id="totalBooksCount" class="total-count">0 books</span>
+                </div>
+                <div id="libraryBooks" class="library-grid">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <p>Loading library...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Category Modal (Bottom Sheet) -->
+        <div class="category-modal-lib" id="categoryModal">
+            <div class="modal-overlay-lib" onclick="closeCategoryModal()"></div>
+            <div class="modal-content-lib">
+                <div class="modal-handle"></div>
+                <div class="modal-header-lib">
+                    <h2 id="modalCategoryTitle">Fiction Books</h2>
+                    <button class="close-modal-btn" onclick="closeCategoryModal()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="modal-books-grid" id="modalBooksContainer">
+                    <!-- Books will load here -->
                 </div>
             </div>
         </div>
@@ -405,8 +481,10 @@ function loadLibraryPage() {
 
 async function loadLibraryBooks() {
     try {
-        if (!window.allAudiobooks) {
-            const snapshot = await db.collection('audiobooks').get();
+        if (!window.allAudiobooks || window.allAudiobooks.length === 0) {
+            const snapshot = await db.collection('audiobooks')
+                .orderBy('createdAt', 'desc')
+                .get();
             
             window.allAudiobooks = [];
             snapshot.forEach(doc => {
@@ -417,11 +495,44 @@ async function loadLibraryBooks() {
             });
         }
         
+        // Update category counts
+        updateCategoryCounts(window.allAudiobooks);
+        
+        // Display all books
         displayLibraryBooks(window.allAudiobooks);
+        
+        // Update total count
+        const totalCountEl = document.getElementById('totalBooksCount');
+        if (totalCountEl) {
+            totalCountEl.textContent = `${window.allAudiobooks.length} books`;
+        }
         
     } catch (error) {
         console.error("Error loading library:", error);
+        const container = document.getElementById('libraryBooks');
+        if (container) {
+            container.innerHTML = `
+                <div class="no-books">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">❌</div>
+                    <h3>Error loading library</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
     }
+}
+
+// Update Category Counts
+function updateCategoryCounts(books) {
+    const categories = ['Fiction', 'Romance', 'Thriller', 'Business', 'Self-Help', 'Horror'];
+    
+    categories.forEach(cat => {
+        const count = books.filter(book => book.category === cat).length;
+        const countEl = document.getElementById(`count-${cat.toLowerCase().replace('-', '-')}`);
+        if (countEl) {
+            countEl.textContent = `${count} books`;
+        }
+    });
 }
 
 function displayLibraryBooks(books) {
@@ -433,7 +544,7 @@ function displayLibraryBooks(books) {
             <div class="no-books">
                 <div style="font-size: 4rem; margin-bottom: 20px;">🔍</div>
                 <h3>No books found</h3>
-                <p>Try a different filter</p>
+                <p>Try a different search</p>
             </div>
         `;
         return;
@@ -447,7 +558,7 @@ function displayLibraryBooks(books) {
 
 function createLibraryBookCard(book) {
     const rating = book.rating || 4.5;
-    const plays = book.plays || Math.floor(Math.random() * 10000000);
+    const plays = book.plays || Math.floor(Math.random() * 1000000);
     
     return `
         <div class="library-book-card" onclick="openBook('${book.id}')">
@@ -461,33 +572,95 @@ function createLibraryBookCard(book) {
                 <h3 class="library-book-title">${book.title}</h3>
                 <p class="library-book-author">${book.author || 'Unknown Author'}</p>
                 <div class="library-book-meta">
-                    <span class="library-book-duration">🕐 ${book.duration || 'N/A'}</span>
-                    <span class="library-book-chapters">📑 ${book.totalChapters || 0} Ch</span>
-                </div>
-                <div class="library-book-rating">
-                    <span style="color: #ffd700;">⭐</span>
-                    <span>${rating.toFixed(1)}</span>
+                    <span><i class="fa-solid fa-clock"></i> ${book.duration || 'N/A'}</span>
+                    <span><i class="fa-solid fa-star" style="color: #ffd700;"></i> ${rating.toFixed(1)}</span>
                 </div>
             </div>
         </div>
     `;
 }
 
-window.filterLibrary = function(category) {
-    // Update active chip
-    document.querySelectorAll('.filter-chip').forEach(chip => {
-        chip.classList.remove('active');
-        if (chip.textContent === category || (category === 'all' && chip.textContent === 'All')) {
-            chip.classList.add('active');
-        }
-    });
+// Open Category Modal (Bottom Sheet Style)
+window.openCategoryModal = function(category) {
+    console.log("📂 Opening category:", category);
     
-    if (category === 'all') {
-        displayLibraryBooks(window.allAudiobooks);
+    const modal = document.getElementById('categoryModal');
+    const modalTitle = document.getElementById('modalCategoryTitle');
+    const modalBooksContainer = document.getElementById('modalBooksContainer');
+    
+    if (!modal || !modalTitle || !modalBooksContainer) return;
+    
+    // Filter books by category
+    const categoryBooks = window.allAudiobooks.filter(book => book.category === category);
+    
+    // Update modal title
+    const icons = {
+        'Fiction': '📚',
+        'Romance': '💕',
+        'Thriller': '🔍',
+        'Business': '💼',
+        'Self-Help': '🧠',
+        'Horror': '👻'
+    };
+    
+    modalTitle.innerHTML = `${icons[category] || '📖'} ${category} <span style="color: var(--text-gray); font-size: 0.85rem; font-weight: 400;">(${categoryBooks.length})</span>`;
+    
+    // Load books in modal
+    if (categoryBooks.length === 0) {
+        modalBooksContainer.innerHTML = `
+            <div class="no-books" style="grid-column: 1/-1;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">📚</div>
+                <h3>No ${category} books yet</h3>
+                <p>Check back soon!</p>
+            </div>
+        `;
     } else {
-        const filtered = window.allAudiobooks.filter(book => book.category === category);
-        displayLibraryBooks(filtered);
+        modalBooksContainer.innerHTML = '';
+        categoryBooks.forEach(book => {
+            modalBooksContainer.innerHTML += createModalBookCard(book);
+        });
     }
+    
+    // Show modal with animation
+    modal.style.display = 'block';
+    setTimeout(() => {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }, 10);
+}
+
+// Close Category Modal
+window.closeCategoryModal = function() {
+    const modal = document.getElementById('categoryModal');
+    if (!modal) return;
+    
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// Create Modal Book Card (Compact)
+function createModalBookCard(book) {
+    const rating = book.rating || 4.5;
+    
+    return `
+        <div class="modal-book-card" onclick="closeCategoryModal(); openBook('${book.id}');">
+            <img src="${book.coverUrl || 'https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'}" 
+                 alt="${book.title}"
+                 onerror="this.src='https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'">
+            <div class="modal-book-info">
+                <h4>${book.title}</h4>
+                <p>${book.author || 'Unknown'}</p>
+                <div class="modal-book-rating">
+                    <i class="fa-solid fa-star" style="color: #ffd700;"></i>
+                    <span>${rating.toFixed(1)}</span>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function searchBooks(query) {
