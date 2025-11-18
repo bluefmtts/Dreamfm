@@ -225,10 +225,13 @@ function updatePlayButton() {
     const miniBtn = document.getElementById('miniPlayBtn');
     const fullBtn = document.getElementById('playPauseBtn');
     
-    const icon = PlayerState.isPlaying ? '⏸️' : '▶️';
-    
-    if (miniBtn) miniBtn.textContent = icon;
-    if (fullBtn) fullBtn.textContent = icon;
+    if (PlayerState.isPlaying) {
+        if (miniBtn) miniBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        if (fullBtn) fullBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    } else {
+        if (miniBtn) miniBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        if (fullBtn) fullBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+    }
 }
 
 // Previous Chapter
@@ -238,6 +241,8 @@ function previousChapter() {
         if (PlayerState.isPlaying) {
             setTimeout(() => PlayerState.audioElement.play(), 100);
         }
+    } else {
+        showToast("📖 Already at first chapter");
     }
 }
 
@@ -249,6 +254,8 @@ function nextChapter() {
         if (PlayerState.isPlaying) {
             setTimeout(() => PlayerState.audioElement.play(), 100);
         }
+    } else {
+        showToast("📖 No more chapters");
     }
 }
 
@@ -315,12 +322,13 @@ function cycleSpeed() {
     PlayerState.audioElement.playbackRate = PlayerState.playbackSpeed;
     
     document.getElementById('speedBtn').textContent = PlayerState.playbackSpeed + 'x';
+    showToast(`⚡ Speed: ${PlayerState.playbackSpeed}x`);
 }
 
 // Toggle Chapters List
 function toggleChaptersList() {
     const chaptersList = document.getElementById('chaptersList');
-    if (chaptersList.style.display === 'none') {
+    if (chaptersList.style.display === 'none' || chaptersList.style.display === '') {
         chaptersList.style.display = 'block';
     } else {
         chaptersList.style.display = 'none';
@@ -343,7 +351,8 @@ function loadChaptersList() {
         }
         
         chapterDiv.innerHTML = `
-            <div>📖 Chapter ${i}</div>
+            <i class="fa-solid fa-book-open"></i>
+            <span>Chapter ${i}</span>
         `;
         
         chapterDiv.addEventListener('click', () => {
@@ -351,6 +360,7 @@ function loadChaptersList() {
             if (PlayerState.isPlaying) {
                 setTimeout(() => PlayerState.audioElement.play(), 100);
             }
+            toggleChaptersList();
         });
         
         container.appendChild(chapterDiv);
