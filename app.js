@@ -9,7 +9,24 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ DOM Loaded");
     setupEventListeners();
     loadHomePage();
+    initializeUserData(); // Initialize liked books and history
 });
+
+// User Data Storage (LocalStorage)
+function initializeUserData() {
+    if (!localStorage.getItem('likedBooks')) {
+        localStorage.setItem('likedBooks', JSON.stringify([]));
+    }
+    if (!localStorage.getItem('historyBooks')) {
+        localStorage.setItem('historyBooks', JSON.stringify([]));
+    }
+    if (!localStorage.getItem('userCoins')) {
+        localStorage.setItem('userCoins', '0');
+    }
+    if (!localStorage.getItem('membershipStatus')) {
+        localStorage.setItem('membershipStatus', 'false');
+    }
+}
 
 // Setup Event Listeners
 function setupEventListeners() {
@@ -44,8 +61,8 @@ function navigateTo(page) {
         case 'home':
             loadHomePage();
             break;
-        case 'library':
-            loadLibraryPage();
+        case 'membership':
+            loadMembershipPage();
             break;
         case 'profile':
             loadProfilePage();
@@ -56,7 +73,7 @@ function navigateTo(page) {
 }
 
 // ============================================
-// HOME PAGE (MOBILE-FIRST DESIGN)
+// HOME PAGE (MOBILE-FIRST DESIGN WITH SCROLL)
 // ============================================
 
 function loadHomePage() {
@@ -75,14 +92,6 @@ function loadHomePage() {
             <section class="audio-section">
                 <div class="section-header">
                     <h2>🔥 Top Picks for You</h2>
-                    <div class="nav-arrows">
-                        <button class="arrow prev-arrow" data-section="featured">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-                        <button class="arrow next-arrow" data-section="featured">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </div>
                 </div>
                 <div class="carousel" id="featuredCarousel">
                     <div class="loading-container">
@@ -95,14 +104,6 @@ function loadHomePage() {
             <section class="audio-section">
                 <div class="section-header">
                     <h2>📚 Recently Added</h2>
-                    <div class="nav-arrows">
-                        <button class="arrow prev-arrow" data-section="recent">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-                        <button class="arrow next-arrow" data-section="recent">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </div>
                 </div>
                 <div class="carousel" id="recentCarousel">
                     <div class="loading-container">
@@ -115,14 +116,6 @@ function loadHomePage() {
             <section class="audio-section">
                 <div class="section-header">
                     <h2>⭐ Most Popular</h2>
-                    <div class="nav-arrows">
-                        <button class="arrow prev-arrow" data-section="popular">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-                        <button class="arrow next-arrow" data-section="popular">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </div>
                 </div>
                 <div class="carousel" id="popularCarousel">
                     <div class="loading-container">
@@ -131,7 +124,19 @@ function loadHomePage() {
                 </div>
             </section>
             
-            <!-- Section 4: Browse by Category -->
+            <!-- Section 4: Trending Now -->
+            <section class="audio-section">
+                <div class="section-header">
+                    <h2>📈 Trending Now</h2>
+                </div>
+                <div class="carousel" id="trendingCarousel">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 5: Browse by Category -->
             <section class="audio-section">
                 <div class="section-header">
                     <h2>📂 Browse Categories</h2>
@@ -163,14 +168,23 @@ function loadHomePage() {
                     </div>
                 </div>
             </section>
+            
+            <!-- Section 6: All Audiobooks (Scrollable) -->
+            <section class="audio-section">
+                <div class="section-header">
+                    <h2>🎧 All Audiobooks</h2>
+                </div>
+                <div class="all-audiobooks-grid" id="allAudiobooksGrid">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
         </div>
     `;
     
     // Load audiobooks
     loadAudiobooks();
-    
-    // Setup carousel navigation
-    setupCarouselNavigation();
 }
 
 // Load Audiobooks from Firestore
@@ -209,6 +223,10 @@ async function loadAudiobooks() {
         displayFeaturedBooks(window.allAudiobooks.slice(0, 4));
         displayRecentBooks(window.allAudiobooks.slice(0, 4));
         displayPopularBooks(window.allAudiobooks.slice(0, 4));
+        displayTrendingBooks(window.allAudiobooks.slice(0, 4));
+        
+        // Display ALL books in grid (scrollable)
+        displayAllAudiobooks(window.allAudiobooks);
         
     } catch (error) {
         console.error("❌ Error loading audiobooks:", error);
@@ -249,7 +267,7 @@ function displayPopularBooks(books) {
     const container = document.getElementById('popularCarousel');
     if (!container) return;
     
-    // Sort by plays (if available)
+    // Sort by plays
     const sorted = [...books].sort((a, b) => (b.plays || 0) - (a.plays || 0));
     
     container.innerHTML = '';
@@ -258,7 +276,32 @@ function displayPopularBooks(books) {
     });
 }
 
-// Create Mobile-Optimized Book Card
+// Display Trending Books - SIRF 4 ✅
+function displayTrendingBooks(books) {
+    const container = document.getElementById('trendingCarousel');
+    if (!container) return;
+    
+    // Sort by rating
+    const sorted = [...books].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    
+    container.innerHTML = '';
+    sorted.forEach(book => {
+        container.innerHTML += createMobileBookCard(book);
+    });
+}
+
+// Display ALL Audiobooks in Grid (Scrollable)
+function displayAllAudiobooks(books) {
+    const container = document.getElementById('allAudiobooksGrid');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    books.forEach(book => {
+        container.innerHTML += createGridBookCard(book);
+    });
+}
+
+// Create Mobile-Optimized Book Card (Horizontal)
 function createMobileBookCard(book) {
     const rating = book.rating || 4.5;
     const plays = book.plays || Math.floor(Math.random() * 10000000);
@@ -283,6 +326,29 @@ function createMobileBookCard(book) {
     `;
 }
 
+// Create Grid Book Card (Vertical - for All Audiobooks section)
+function createGridBookCard(book) {
+    const rating = book.rating || 4.5;
+    
+    return `
+        <div class="grid-book-card" onclick="openBook('${book.id}')">
+            <div class="grid-book-cover">
+                <img src="${book.coverUrl || 'https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'}" 
+                     alt="${book.title}"
+                     onerror="this.src='https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'">
+                ${book.language ? `<div class="book-badge">${book.language}</div>` : ''}
+            </div>
+            <div class="grid-book-info">
+                <h3 class="grid-book-title">${book.title}</h3>
+                <p class="grid-book-author">${book.author || 'Unknown'}</p>
+                <div class="grid-book-meta">
+                    <span><i class="fa-solid fa-star" style="color: #ffd700;"></i> ${rating.toFixed(1)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // Format Plays Number
 function formatPlays(num) {
     if (num >= 1000000) {
@@ -293,34 +359,18 @@ function formatPlays(num) {
     return num;
 }
 
-// Setup Carousel Navigation (Arrow buttons)
-function setupCarouselNavigation() {
-    document.querySelectorAll('.nav-arrows .arrow').forEach(arrow => {
-        arrow.addEventListener('click', function() {
-            const section = this.getAttribute('data-section');
-            const carousel = document.getElementById(section + 'Carousel');
-            
-            if (!carousel) return;
-            
-            const scrollAmount = 300;
-            
-            if (this.classList.contains('next-arrow')) {
-                carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-            } else {
-                carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-            }
-        });
-    });
-}
-
 // Open Book (Play Audiobook)
 function openBook(bookId) {
     console.log("📖 Opening book:", bookId);
     
-    // Find book in window.allAudiobooks
+    // Find book
     const book = window.allAudiobooks.find(b => b.id === bookId);
     
     if (book) {
+        // Add to history
+        addToHistory(book);
+        
+        // Play audiobook
         playAudiobook(bookId, book);
     } else {
         console.error("❌ Book not found:", bookId);
@@ -328,379 +378,234 @@ function openBook(bookId) {
     }
 }
 
+// Add to History
+function addToHistory(book) {
+    let history = JSON.parse(localStorage.getItem('historyBooks') || '[]');
+    
+    // Remove if already exists
+    history = history.filter(b => b.id !== book.id);
+    
+    // Add to beginning
+    history.unshift({
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        coverUrl: book.coverUrl,
+        timestamp: Date.now()
+    });
+    
+    // Keep only last 5
+    history = history.slice(0, 5);
+    
+    localStorage.setItem('historyBooks', JSON.stringify(history));
+}
+
+// Toggle Like Book
+window.toggleLikeBook = function(bookId) {
+    const book = window.allAudiobooks.find(b => b.id === bookId);
+    if (!book) return;
+    
+    let likedBooks = JSON.parse(localStorage.getItem('likedBooks') || '[]');
+    
+    const index = likedBooks.findIndex(b => b.id === bookId);
+    
+    if (index > -1) {
+        // Remove from liked
+        likedBooks.splice(index, 1);
+        showToast("❌ Removed from liked books");
+    } else {
+        // Add to liked (max 5)
+        if (likedBooks.length >= 5) {
+            likedBooks.pop(); // Remove oldest
+        }
+        
+        likedBooks.unshift({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            coverUrl: book.coverUrl,
+            timestamp: Date.now()
+        });
+        
+        showToast("❤️ Added to liked books");
+    }
+    
+    localStorage.setItem('likedBooks', JSON.stringify(likedBooks));
+    
+    // Reload profile if on that page
+    if (document.querySelector('.profile-page')) {
+        loadProfilePage();
+    }
+}
+
 // Filter by Category
 function filterByCategory(category) {
     console.log("🔍 Filtering by category:", category);
-    navigateTo('library');
     
-    // Wait for library to load, then filter
-    setTimeout(() => {
-        if (window.openCategoryModal) {
-            window.openCategoryModal(category);
-        }
-    }, 200);
+    const filtered = window.allAudiobooks.filter(book => book.category === category);
+    
+    // Scroll to all audiobooks section
+    const allSection = document.getElementById('allAudiobooksGrid');
+    if (allSection) {
+        allSection.scrollIntoView({ behavior: 'smooth' });
+        displayAllAudiobooks(filtered);
+    }
 }
 
 // ============================================
-// LIBRARY PAGE (MOBILE-FIRST FIXED)
+// MEMBERSHIP/COINS PAGE
 // ============================================
 
-function loadLibraryPage() {
+function loadMembershipPage() {
     const mainContent = document.getElementById('mainContent');
     
+    const userCoins = parseInt(localStorage.getItem('userCoins') || '0');
+    const isMember = localStorage.getItem('membershipStatus') === 'true';
+    
     mainContent.innerHTML = `
-        <div class="library-page">
+        <div class="membership-page">
             <!-- Header -->
-            <div class="library-header">
-                <h1>📚 My Library</h1>
+            <div class="membership-header">
+                <h1>💎 Premium Membership</h1>
+                <p>Unlock unlimited audiobooks</p>
             </div>
             
-            <!-- Search & Sort -->
-            <div class="library-controls">
-                <div class="search-wrapper">
-                    <i class="fa-solid fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search books...">
+            <!-- Coin Balance -->
+            <div class="coin-balance-card">
+                <div class="coin-icon">🪙</div>
+                <div class="coin-info">
+                    <h2>${userCoins} Coins</h2>
+                    <p>Your current balance</p>
                 </div>
-                <select id="sortSelect" class="sort-select">
-                    <option value="recent">Recent</option>
-                    <option value="popular">Popular</option>
-                    <option value="rating">Top Rated</option>
-                    <option value="title">A-Z</option>
-                </select>
             </div>
             
-            <!-- Categories Section (Mobile Bottom Sheet Style) -->
-            <section class="library-categories-section">
+            <!-- Membership Section -->
+            <section class="membership-section">
                 <div class="section-header">
-                    <h2>Browse by Category</h2>
+                    <h2>🌟 Premium Membership</h2>
                 </div>
-                <div class="categories-grid-library">
-                    <div class="category-card-lib" onclick="openCategoryModal('Fiction')">
-                        <div class="category-icon-lib">📚</div>
-                        <div class="category-info">
-                            <h3>Fiction</h3>
-                            <p class="book-count" id="count-fiction">0 books</p>
-                        </div>
+                
+                <div class="membership-card ${isMember ? 'active-membership' : ''}">
+                    <div class="membership-badge">
+                        ${isMember ? '✅ ACTIVE' : '👑 PREMIUM'}
                     </div>
-                    
-                    <div class="category-card-lib" onclick="openCategoryModal('Romance')">
-                        <div class="category-icon-lib">💕</div>
-                        <div class="category-info">
-                            <h3>Romance</h3>
-                            <p class="book-count" id="count-romance">0 books</p>
-                        </div>
+                    <h3>DreamFM Premium</h3>
+                    <div class="membership-price">
+                        <span class="price">₹29</span>
+                        <span class="duration">/month</span>
                     </div>
-                    
-                    <div class="category-card-lib" onclick="openCategoryModal('Thriller')">
-                        <div class="category-icon-lib">🔍</div>
-                        <div class="category-info">
-                            <h3>Thriller</h3>
-                            <p class="book-count" id="count-thriller">0 books</p>
-                        </div>
-                    </div>
-                    
-                    <div class="category-card-lib" onclick="openCategoryModal('Business')">
-                        <div class="category-icon-lib">💼</div>
-                        <div class="category-info">
-                            <h3>Business</h3>
-                            <p class="book-count" id="count-business">0 books</p>
-                        </div>
-                    </div>
-                    
-                    <div class="category-card-lib" onclick="openCategoryModal('Self-Help')">
-                        <div class="category-icon-lib">🧠</div>
-                        <div class="category-info">
-                            <h3>Self-Help</h3>
-                            <p class="book-count" id="count-self-help">0 books</p>
-                        </div>
-                    </div>
-                    
-                    <div class="category-card-lib" onclick="openCategoryModal('Horror')">
-                        <div class="category-icon-lib">👻</div>
-                        <div class="category-info">
-                            <h3>Horror</h3>
-                            <p class="book-count" id="count-horror">0 books</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- All Books Section -->
-            <section class="all-books-section">
-                <div class="section-header">
-                    <h2>All Audiobooks</h2>
-                    <span id="totalBooksCount" class="total-count">0 books</span>
-                </div>
-                <div id="libraryBooks" class="library-grid">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                        <p>Loading library...</p>
-                    </div>
-                </div>
-            </section>
-        </div>
-        
-        <!-- Category Modal (Bottom Sheet) -->
-        <div class="category-modal-lib" id="categoryModal">
-            <div class="modal-overlay-lib" onclick="closeCategoryModal()"></div>
-            <div class="modal-content-lib">
-                <div class="modal-handle"></div>
-                <div class="modal-header-lib">
-                    <h2 id="modalCategoryTitle">Fiction Books</h2>
-                    <button class="close-modal-btn" onclick="closeCategoryModal()">
-                        <i class="fa-solid fa-xmark"></i>
+                    <ul class="membership-features">
+                        <li>✅ Unlimited audiobook access</li>
+                        <li>✅ No ads interruption</li>
+                        <li>✅ Offline download</li>
+                        <li>✅ Early access to new releases</li>
+                        <li>✅ Priority support</li>
+                    </ul>
+                    <button class="membership-btn ${isMember ? 'active' : ''}" 
+                            onclick="${isMember ? 'cancelMembership()' : 'purchaseMembership()'}">
+                        ${isMember ? 'Cancel Membership' : 'Get Premium Now'}
                     </button>
                 </div>
-                <div class="modal-books-grid" id="modalBooksContainer">
-                    <!-- Books will load here -->
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Load all books
-    loadLibraryBooks();
-    
-    // Setup search and sort
-    setTimeout(() => {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                searchBooks(e.target.value);
-            });
-        }
-        
-        const sortSelect = document.getElementById('sortSelect');
-        if (sortSelect) {
-            sortSelect.addEventListener('change', (e) => {
-                sortBooks(e.target.value);
-            });
-        }
-    }, 100);
-}
-
-async function loadLibraryBooks() {
-    try {
-        if (!window.allAudiobooks || window.allAudiobooks.length === 0) {
-            const snapshot = await db.collection('audiobooks')
-                .orderBy('createdAt', 'desc')
-                .get();
+            </section>
             
-            window.allAudiobooks = [];
-            snapshot.forEach(doc => {
-                window.allAudiobooks.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-        }
-        
-        // Update category counts
-        updateCategoryCounts(window.allAudiobooks);
-        
-        // Display all books
-        displayLibraryBooks(window.allAudiobooks);
-        
-        // Update total count
-        const totalCountEl = document.getElementById('totalBooksCount');
-        if (totalCountEl) {
-            totalCountEl.textContent = `${window.allAudiobooks.length} books`;
-        }
-        
-    } catch (error) {
-        console.error("Error loading library:", error);
-        const container = document.getElementById('libraryBooks');
-        if (container) {
-            container.innerHTML = `
-                <div class="no-books">
-                    <div style="font-size: 4rem; margin-bottom: 20px;">❌</div>
-                    <h3>Error loading library</h3>
-                    <p>${error.message}</p>
+            <!-- Coins Packages -->
+            <section class="coins-section">
+                <div class="section-header">
+                    <h2>🪙 Buy Coins</h2>
+                    <p>Use coins to unlock chapters</p>
                 </div>
-            `;
-        }
-    }
-}
-
-// Update Category Counts
-function updateCategoryCounts(books) {
-    const categories = ['Fiction', 'Romance', 'Thriller', 'Business', 'Self-Help', 'Horror'];
-    
-    categories.forEach(cat => {
-        const count = books.filter(book => book.category === cat).length;
-        const countEl = document.getElementById(`count-${cat.toLowerCase().replace('-', '-')}`);
-        if (countEl) {
-            countEl.textContent = `${count} books`;
-        }
-    });
-}
-
-function displayLibraryBooks(books) {
-    const container = document.getElementById('libraryBooks');
-    if (!container) return;
-    
-    if (books.length === 0) {
-        container.innerHTML = `
-            <div class="no-books">
-                <div style="font-size: 4rem; margin-bottom: 20px;">🔍</div>
-                <h3>No books found</h3>
-                <p>Try a different search</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = '';
-    books.forEach(book => {
-        container.innerHTML += createLibraryBookCard(book);
-    });
-}
-
-function createLibraryBookCard(book) {
-    const rating = book.rating || 4.5;
-    const plays = book.plays || Math.floor(Math.random() * 1000000);
-    
-    return `
-        <div class="library-book-card" onclick="openBook('${book.id}')">
-            <div class="library-book-cover">
-                <img src="${book.coverUrl || 'https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'}" 
-                     alt="${book.title}"
-                     onerror="this.src='https://via.placeholder.com/200x300/ab47bc/FFFFFF?text=DreamFM'">
-                ${book.language ? `<div class="book-badge">${book.language}</div>` : ''}
-            </div>
-            <div class="library-book-info">
-                <h3 class="library-book-title">${book.title}</h3>
-                <p class="library-book-author">${book.author || 'Unknown Author'}</p>
-                <div class="library-book-meta">
-                    <span><i class="fa-solid fa-clock"></i> ${book.duration || 'N/A'}</span>
-                    <span><i class="fa-solid fa-star" style="color: #ffd700;"></i> ${rating.toFixed(1)}</span>
+                
+                <div class="coins-grid">
+                    <div class="coin-package" onclick="purchaseCoins(1, 50)">
+                        <div class="coin-icon-pkg">🪙</div>
+                        <h3>50 Coins</h3>
+                        <div class="coin-price">₹1</div>
+                        <button class="coin-btn">Buy Now</button>
+                    </div>
+                    
+                    <div class="coin-package popular" onclick="purchaseCoins(5, 300)">
+                        <div class="popular-badge">🔥 POPULAR</div>
+                        <div class="coin-icon-pkg">🪙</div>
+                        <h3>300 Coins</h3>
+                        <div class="coin-price">₹5</div>
+                        <div class="coin-bonus">+20% Bonus</div>
+                        <button class="coin-btn">Buy Now</button>
+                    </div>
+                    
+                    <div class="coin-package best-value" onclick="purchaseCoins(10, 700)">
+                        <div class="popular-badge">💎 BEST VALUE</div>
+                        <div class="coin-icon-pkg">🪙</div>
+                        <h3>700 Coins</h3>
+                        <div class="coin-price">₹10</div>
+                        <div class="coin-bonus">+40% Bonus</div>
+                        <button class="coin-btn">Buy Now</button>
+                    </div>
                 </div>
-            </div>
+            </section>
+            
+            <!-- How It Works -->
+            <section class="how-it-works">
+                <h2>How Coins Work</h2>
+                <div class="work-steps">
+                    <div class="work-step">
+                        <div class="step-icon">1️⃣</div>
+                        <h3>Buy Coins</h3>
+                        <p>Choose a coin package</p>
+                    </div>
+                    <div class="work-step">
+                        <div class="step-icon">2️⃣</div>
+                        <h3>Unlock Chapters</h3>
+                        <p>Use coins to unlock premium chapters</p>
+                    </div>
+                    <div class="work-step">
+                        <div class="step-icon">3️⃣</div>
+                        <h3>Enjoy</h3>
+                        <p>Listen to your favorite audiobooks</p>
+                    </div>
+                </div>
+            </section>
         </div>
     `;
 }
 
-// Open Category Modal (Bottom Sheet Style)
-window.openCategoryModal = function(category) {
-    console.log("📂 Opening category:", category);
+// Purchase Membership
+window.purchaseMembership = function() {
+    // Simulate payment (You'll integrate Razorpay/Paytm here)
+    const confirm = window.confirm('Purchase DreamFM Premium for ₹29/month?');
     
-    const modal = document.getElementById('categoryModal');
-    const modalTitle = document.getElementById('modalCategoryTitle');
-    const modalBooksContainer = document.getElementById('modalBooksContainer');
-    
-    if (!modal || !modalTitle || !modalBooksContainer) return;
-    
-    // Filter books by category
-    const categoryBooks = window.allAudiobooks.filter(book => book.category === category);
-    
-    // Update modal title
-    const icons = {
-        'Fiction': '📚',
-        'Romance': '💕',
-        'Thriller': '🔍',
-        'Business': '💼',
-        'Self-Help': '🧠',
-        'Horror': '👻'
-    };
-    
-    modalTitle.innerHTML = `${icons[category] || '📖'} ${category} <span style="color: var(--text-gray); font-size: 0.85rem; font-weight: 400;">(${categoryBooks.length})</span>`;
-    
-    // Load books in modal
-    if (categoryBooks.length === 0) {
-        modalBooksContainer.innerHTML = `
-            <div class="no-books" style="grid-column: 1/-1;">
-                <div style="font-size: 3rem; margin-bottom: 15px;">📚</div>
-                <h3>No ${category} books yet</h3>
-                <p>Check back soon!</p>
-            </div>
-        `;
-    } else {
-        modalBooksContainer.innerHTML = '';
-        categoryBooks.forEach(book => {
-            modalBooksContainer.innerHTML += createModalBookCard(book);
-        });
+    if (confirm) {
+        localStorage.setItem('membershipStatus', 'true');
+        showToast('🎉 Premium Membership Activated!');
+        loadMembershipPage();
     }
-    
-    // Show modal with animation
-    modal.style.display = 'block';
-    setTimeout(() => {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }, 10);
 }
 
-// Close Category Modal
-window.closeCategoryModal = function() {
-    const modal = document.getElementById('categoryModal');
-    if (!modal) return;
+// Cancel Membership
+window.cancelMembership = function() {
+    const confirm = window.confirm('Are you sure you want to cancel your membership?');
     
-    modal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300);
-}
-
-// Create Modal Book Card (Compact)
-function createModalBookCard(book) {
-    const rating = book.rating || 4.5;
-    
-    return `
-        <div class="modal-book-card" onclick="closeCategoryModal(); openBook('${book.id}');">
-            <img src="${book.coverUrl || 'https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'}" 
-                 alt="${book.title}"
-                 onerror="this.src='https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'">
-            <div class="modal-book-info">
-                <h4>${book.title}</h4>
-                <p>${book.author || 'Unknown'}</p>
-                <div class="modal-book-rating">
-                    <i class="fa-solid fa-star" style="color: #ffd700;"></i>
-                    <span>${rating.toFixed(1)}</span>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function searchBooks(query) {
-    if (!query) {
-        displayLibraryBooks(window.allAudiobooks);
-        return;
+    if (confirm) {
+        localStorage.setItem('membershipStatus', 'false');
+        showToast('❌ Membership Cancelled');
+        loadMembershipPage();
     }
-    
-    const filtered = window.allAudiobooks.filter(book => 
-        book.title.toLowerCase().includes(query.toLowerCase()) ||
-        (book.author && book.author.toLowerCase().includes(query.toLowerCase()))
-    );
-    
-    displayLibraryBooks(filtered);
 }
 
-function sortBooks(sortBy) {
-    let sorted = [...window.allAudiobooks];
+// Purchase Coins
+window.purchaseCoins = function(price, coins) {
+    // Simulate payment
+    const confirm = window.confirm(`Purchase ${coins} coins for ₹${price}?`);
     
-    switch(sortBy) {
-        case 'popular':
-            sorted.sort((a, b) => (b.plays || 0) - (a.plays || 0));
-            break;
-        case 'rating':
-            sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-            break;
-        case 'title':
-            sorted.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-        case 'recent':
-        default:
-            // Already sorted by createdAt
-            break;
+    if (confirm) {
+        const currentCoins = parseInt(localStorage.getItem('userCoins') || '0');
+        localStorage.setItem('userCoins', (currentCoins + coins).toString());
+        showToast(`🪙 ${coins} coins added!`);
+        loadMembershipPage();
     }
-    
-    displayLibraryBooks(sorted);
 }
 
 // ============================================
-// PROFILE PAGE
+// PROFILE PAGE (WITH LIKED & HISTORY)
 // ============================================
 
 function loadProfilePage() {
@@ -720,58 +625,123 @@ function loadProfilePage() {
     }
     
     const user = window.currentUser;
+    const userCoins = parseInt(localStorage.getItem('userCoins') || '0');
+    const isMember = localStorage.getItem('membershipStatus') === 'true';
+    const likedBooks = JSON.parse(localStorage.getItem('likedBooks') || '[]');
+    const historyBooks = JSON.parse(localStorage.getItem('historyBooks') || '[]');
     
     mainContent.innerHTML = `
         <div class="profile-page">
+            <!-- Profile Header -->
             <div class="profile-header">
                 <img src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + user.email}" 
                      class="profile-avatar-large">
                 <h1>${user.displayName || 'User'}</h1>
                 <p>${user.email}</p>
+                ${isMember ? '<div class="premium-badge">👑 Premium Member</div>' : ''}
             </div>
             
+            <!-- Stats -->
             <div class="profile-stats">
                 <div class="stat-card">
-                    <div class="stat-icon">📚</div>
-                    <h3>0</h3>
-                    <p>Books Played</p>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⏰</div>
-                    <h3>0h</h3>
-                    <p>Hours Listened</p>
+                    <div class="stat-icon">🪙</div>
+                    <h3>${userCoins}</h3>
+                    <p>Coins</p>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon">❤️</div>
-                    <h3>0</h3>
-                    <p>Favorites</p>
+                    <h3>${likedBooks.length}</h3>
+                    <p>Liked</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <h3>${historyBooks.length}</h3>
+                    <p>History</p>
                 </div>
             </div>
             
+            <!-- Liked Audiobooks -->
+            <section class="profile-section">
+                <div class="section-header">
+                    <h2>❤️ Liked Audiobooks</h2>
+                </div>
+                ${likedBooks.length > 0 ? `
+                    <div class="profile-books-grid">
+                        ${likedBooks.map(book => createProfileBookCard(book, 'liked')).join('')}
+                    </div>
+                ` : '<p class="empty-state">No liked books yet</p>'}
+            </section>
+            
+            <!-- History -->
+            <section class="profile-section">
+                <div class="section-header">
+                    <h2>📖 Recently Played</h2>
+                </div>
+                ${historyBooks.length > 0 ? `
+                    <div class="profile-books-grid">
+                        ${historyBooks.map(book => createProfileBookCard(book, 'history')).join('')}
+                    </div>
+                ` : '<p class="empty-state">No history yet</p>'}
+            </section>
+            
+            <!-- Actions -->
             <div class="profile-actions">
+                <button class="profile-btn" onclick="navigateTo('membership')">
+                    <i class="fa-solid fa-crown"></i>
+                    ${isMember ? 'Manage Membership' : 'Get Premium'}
+                </button>
                 <button class="profile-btn" onclick="window.logout()">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     Logout
                 </button>
-                <button class="profile-btn" onclick="clearAudioCache()">
+                <button class="profile-btn" onclick="clearAllData()">
                     <i class="fa-solid fa-trash"></i>
-                    Clear Cache
+                    Clear All Data
                 </button>
-            </div>
-            
-            <div class="profile-sections">
-                <div class="section">
-                    <h2>Continue Listening</h2>
-                    <p style="color: #808080;">No recent books</p>
-                </div>
-                
-                <div class="section">
-                    <h2>Favorites</h2>
-                    <p style="color: #808080;">No favorites yet</p>
-                </div>
             </div>
         </div>
     `;
+}
+
+// Create Profile Book Card
+function createProfileBookCard(book, type) {
+    return `
+        <div class="profile-book-card" onclick="openBook('${book.id}')">
+            <img src="${book.coverUrl || 'https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'}" 
+                 alt="${book.title}"
+                 onerror="this.src='https://via.placeholder.com/150x200/ab47bc/FFFFFF?text=Book'">
+            <div class="profile-book-info">
+                <h4>${book.title}</h4>
+                <p>${book.author || 'Unknown'}</p>
+            </div>
+            ${type === 'liked' ? `
+                <button class="remove-btn" onclick="event.stopPropagation(); removeLikedBook('${book.id}')">
+                    <i class="fa-solid fa-heart-broken"></i>
+                </button>
+            ` : ''}
+        </div>
+    `;
+}
+
+// Remove Liked Book
+window.removeLikedBook = function(bookId) {
+    let likedBooks = JSON.parse(localStorage.getItem('likedBooks') || '[]');
+    likedBooks = likedBooks.filter(b => b.id !== bookId);
+    localStorage.setItem('likedBooks', JSON.stringify(likedBooks));
+    showToast('❌ Removed from liked books');
+    loadProfilePage();
+}
+
+// Clear All Data
+window.clearAllData = function() {
+    const confirm = window.confirm('Clear all your data (history, liked books)?');
+    
+    if (confirm) {
+        localStorage.setItem('likedBooks', '[]');
+        localStorage.setItem('historyBooks', '[]');
+        showToast('🗑️ All data cleared');
+        loadProfilePage();
+    }
 }
 
 // ============================================
@@ -780,7 +750,6 @@ function loadProfilePage() {
 
 // Show Toast Notification
 function showToast(message) {
-    // Remove existing toast
     const existingToast = document.querySelector('.toast-notification');
     if (existingToast) {
         existingToast.remove();
@@ -798,46 +767,17 @@ function showToast(message) {
     }, 3000);
 }
 
-// Add sample audiobook (for testing)
-async function addSampleAudiobook() {
-    try {
-        await db.collection('audiobooks').add({
-            title: "Sample Audiobook " + Date.now(),
-            author: "Test Author",
-            narrator: "AI Voice",
-            coverUrl: "https://picsum.photos/400/600?random=" + Date.now(),
-            description: "This is a test audiobook",
-            category: "Fiction",
-            language: "English",
-            duration: "2h 30m",
-            totalChapters: 10,
-            rating: 4.5,
-            plays: Math.floor(Math.random() * 10000000),
-            audioSlug: "sample-" + Date.now(),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log("✅ Sample audiobook added!");
-        loadAudiobooks();
-    } catch (error) {
-        console.error("❌ Error adding sample:", error);
-    }
-}
-
 // Console helper
 console.log(`
 %c🎧 DreamFM Console Commands 🎧
 
-%caddSampleAudiobook() %c- Add a test book
-%cloadAudiobooks() %c- Reload books
 %cnavigateTo('home') %c- Go to home
-%cnavigateTo('library') %c- Go to library
+%cnavigateTo('membership') %c- Go to membership
 %cnavigateTo('profile') %c- Go to profile
-%cclearAudioCache() %c- Clear audio cache
+%ctoggleLikeBook('bookId') %c- Like/Unlike book
 
 `, 
 'font-size: 16px; font-weight: bold; color: #ab47bc;',
-'color: #ab47bc; font-weight: bold;', 'color: #ccc;',
-'color: #ab47bc; font-weight: bold;', 'color: #ccc;',
 'color: #ab47bc; font-weight: bold;', 'color: #ccc;',
 'color: #ab47bc; font-weight: bold;', 'color: #ccc;',
 'color: #ab47bc; font-weight: bold;', 'color: #ccc;',
