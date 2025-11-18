@@ -1093,3 +1093,112 @@ input, select, button {
         margin: 0 auto;
     }
 }
+/* ===================================
+   ALL BOOKS GRID (4 PER ROW)
+   =================================== */
+.all-books-section {
+    padding: 0 20px 30px;
+}
+
+.all-books-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.grid-book-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.grid-book-card:active {
+    transform: scale(0.95);
+}
+
+.grid-book-cover {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: #222;
+}
+
+.grid-book-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.grid-plays-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: linear-gradient(135deg, #ff4444, #ff6b6b);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.grid-book-info {
+    padding: 12px;
+}
+
+.grid-book-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+}
+
+.grid-book-author {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.grid-book-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-gray);
+}
+
+.grid-book-stats i {
+    margin-right: 3px;
+}
+
+/* Responsive Grid */
+@media (min-width: 768px) {
+    .all-books-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    
+    .grid-book-cover {
+        height: 250px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .all-books-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .grid-book-cover {
+        height: 280px;
+    }
+}
